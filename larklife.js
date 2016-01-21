@@ -9,20 +9,18 @@ $( document ).ready(function() {
   var $figure = [];
 
   function drawGrid() {
+    ctx.beginPath();
     ctx.strokeStyle = 'lightblue';
     ctx.lineWidth = 1;
     for (var i = 0.5; i < width; i = i + cellSize) {
-      ctx.beginPath();
       ctx.moveTo(i, 0.5);
       ctx.lineTo(i, height + 0.5);
-      ctx.stroke();
     }
     for (var j = 0.5; j < height; j = j + cellSize) {
-      ctx.beginPath();
       ctx.moveTo(0.5, j);
       ctx.lineTo(width + 0.5, j);
-      ctx.stroke();
     }
+    ctx.stroke();
   }
 
   function drawPoint(x, y) {
@@ -51,11 +49,11 @@ $( document ).ready(function() {
   }
 
   function conv(x) {
-    return x * cellSize + radius + 0.5;
+    return x * cellSize + radius + 1;
   }
 
   function conv2(x) {
-    return x * cellSize + 0.5;
+    return x * cellSize + 1;
   }
 
   function unconv(x) {
