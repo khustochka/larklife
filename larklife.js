@@ -2,23 +2,23 @@ $( document ).ready(function() {
 
   var canvas = document.getElementById("lc");
   var ctx = canvas.getContext("2d");
-  var width = 700, height = 300, cellSize = 15, radius = (cellSize - 1) / 2;
+  var width = 700, height = 300, cellSize = 30, radius = (cellSize - 1) / 2;
   var
       canvasLeft = canvas.offsetLeft,
       canvasTop = canvas.offsetTop;
-  var $figure = [];
+  var $figure = [], timer = 0;
 
   function drawGrid() {
     ctx.beginPath();
     ctx.strokeStyle = 'lightblue';
     ctx.lineWidth = 1;
     for (var i = 0.5; i < width; i = i + cellSize) {
-      ctx.moveTo(i, 0.5);
-      ctx.lineTo(i, height + 0.5);
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i, height);
     }
     for (var j = 0.5; j < height; j = j + cellSize) {
-      ctx.moveTo(0.5, j);
-      ctx.lineTo(width + 0.5, j);
+      ctx.moveTo(0, j);
+      ctx.lineTo(width, j);
     }
     ctx.stroke();
   }
@@ -26,7 +26,7 @@ $( document ).ready(function() {
   function drawPoint(x, y) {
     ctx.fillStyle = "green";
     ctx.beginPath();
-    ctx.arc(conv(x), conv(y), radius - 0.5, 0, 2*Math.PI);
+    ctx.arc(conv(x), conv(y), radius - 1.5, 0, 2*Math.PI);
     ctx.fill();
   }
 
@@ -54,19 +54,14 @@ $( document ).ready(function() {
   }
 
   function unconv(x) {
-    return Math.floor(x / cellSize);
-  }
-
-  function onBorder(x) {
-    return (x % cellSize == 0);
+    return Math.floor((x - 2) / cellSize);
   }
 
   function processClick(event) {
     var x = event.pageX - canvasLeft,
         y = event.pageY - canvasTop;
-
-    if (onBorder(x) || onBorder(y)) return false;
-    else togglePoint(unconv(x), unconv(y));
+    console.log("x: " + x + ", y: " + y);
+    togglePoint(unconv(x), unconv(y));
   }
 
   drawGrid();
@@ -76,6 +71,10 @@ $( document ).ready(function() {
   $("#stepBtn").click(processStep);
 
   $("#goBtn").click(processGo);
+
+  $("#stopBtn").click(processStop);
+
+  $("#clearBtn").click(clearField);
 
   function processStep() {
     var figure = readFigure();
@@ -88,7 +87,15 @@ $( document ).ready(function() {
     if (figure.length > 0) {
       var newfigure = convertFigure(figure);
       redrawFigure(newfigure);
-      window.setTimeout(processGo, 5);
+      timer = window.setTimeout(processGo, 5);
+    }
+    else timer = 0;
+  }
+
+  function processStop() {
+    if (timer) {
+      window.clearTimeout(timer);
+      timer = 0;
     }
   }
 
@@ -138,11 +145,15 @@ $( document ).ready(function() {
   }
 
   function redrawFigure(figure) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGrid();
+    clearField();
     for (var i = 0; i < figure.length; i ++) {
       drawPoint(figure[i][0], figure[i][1]);
     }
+  }
+
+  function clearField() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGrid();
   }
 
 });

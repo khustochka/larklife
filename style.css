@@ -2,7 +2,17 @@ body {
     text-align: center;
 }
 
+#content {
+    margin: auto;
+    text-align: left;
+    width: 702px;
+}
+
 canvas {
     border: 1px solid black;
-    margin: auto;
+}
+
+button {
+    width: 75px;
+    height: 35px;
 }
