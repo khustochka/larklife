@@ -31,11 +31,8 @@ $( document ).ready(function() {
   }
 
   function clearPoint(x, y) {
-    ctx.fillStyle = "white";
-    ctx.beginPath();
     var ux = conv2(x), uy = conv2(y);
-    ctx.rect(ux, uy, radius * 2, radius * 2);
-    ctx.fill();
+    ctx.clearRect(ux, uy, radius * 2, radius * 2);
   }
 
   function togglePoint(x, y) {
@@ -78,10 +75,21 @@ $( document ).ready(function() {
 
   $("#stepBtn").click(processStep);
 
+  $("#goBtn").click(processGo);
+
   function processStep() {
     var figure = readFigure();
     var newfigure = convertFigure(figure);
     redrawFigure(newfigure);
+  }
+
+  function processGo() {
+    var figure = readFigure();
+    if (figure.length > 0) {
+      var newfigure = convertFigure(figure);
+      redrawFigure(newfigure);
+      window.setTimeout(processGo, 5);
+    }
   }
 
   function readFigure() {
