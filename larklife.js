@@ -2,7 +2,7 @@ $( document ).ready(function() {
 
   var canvas = document.getElementById("lc");
   var ctx = canvas.getContext("2d");
-  var width = 700, height = 300, cellSize = 30, radius = (cellSize - 1) / 2;
+  var width = 700, height = 300, cellSize = 18, radius = (cellSize - 1) / 2;
   var
       canvasLeft = canvas.offsetLeft,
       canvasTop = canvas.offsetTop;
@@ -87,7 +87,7 @@ $( document ).ready(function() {
     if (figure.length > 0) {
       var newfigure = convertFigure(figure);
       redrawFigure(newfigure);
-      timer = window.setTimeout(processGo, 5);
+      timer = window.setTimeout(processGo, 50);
     }
     else timer = 0;
   }
