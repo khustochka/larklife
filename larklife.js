@@ -1,72 +1,163 @@
-$( document ).ready(function() {
+$(document).ready(function () {
 
-  var canvas = document.getElementById("lc");
-  var ctx = canvas.getContext("2d");
-  var width = $(canvas).width(), height = $(canvas).height(), cellSize = 18, radius = (cellSize - 1) / 2;
-  var
-      canvasLeft = canvas.offsetLeft,
-      canvasTop = canvas.offsetTop;
-  var $figure = [], timer = 0, $step = 0;
+  var $canvas = document.getElementById("lc");
 
-  function drawGrid() {
+  // State
+  var $figure = [],
+      $step = 0,
+      $pixelOffX = -1,
+      $pixelOffY = -1,
+      $cellSize = 18;
+
+
+  var $radius,
+      $timer,
+      borderWidth = parseInt($($canvas).css("border-width"));
+
+  var isDragging = false, dragX, dragY;
+
+  window.addEventListener('resize', resizeCanvas, false);
+
+  resizeCanvas();
+
+  function resizeCanvas() {
+    $canvas.width = window.innerWidth;
+    $canvas.height = window.innerHeight;
+
+    redrawState();
+  }
+
+  function redrawState() {
+    // Find canvas
+    var ctx = $canvas.getContext("2d");
+    var canvasWidth = $canvas.width,
+        canvasHeight = $canvas.height;
+
+    $radius = ($cellSize - 1) / 2;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+    // Draw grid
+
+    var offRemainderX = $pixelOffX % $cellSize,
+        offRemainderY = $pixelOffY % $cellSize;
+
     ctx.beginPath();
     ctx.strokeStyle = 'lightblue';
     ctx.lineWidth = 1;
-    for (var i = 0.5; i < width; i = i + cellSize) {
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, height);
+    for (var rx = 0.5 + offRemainderX; rx < canvasWidth; rx = rx + $cellSize) {
+      ctx.moveTo(rx, 0);
+      ctx.lineTo(rx, canvasHeight);
     }
-    for (var j = 0.5; j < height; j = j + cellSize) {
-      ctx.moveTo(0, j);
-      ctx.lineTo(width, j);
+    for (var ry = 0.5 + offRemainderY; ry < canvasHeight; ry = ry + $cellSize) {
+      ctx.moveTo(0, ry);
+      ctx.lineTo(canvasWidth, ry);
     }
     ctx.stroke();
+
+    // Draw points
+    var point,
+        visibleMin = pixelToCellCoords(0, 0),
+        visibleMax = pixelToCellCoords(canvasWidth - 1, canvasHeight - 1);
+
+    for (var i = 0; i < $figure.length; i++) {
+      point = $figure[i];
+      var x = Math.floor(point[0]), y = Math.floor(point[1]);
+      if (x >= visibleMin.x && x <= visibleMax.x && y >= visibleMin.y && y <= visibleMax.y) {
+        drawPoint(ctx, x, y);
+        //console.log(x + " ; " + y);
+      }
+    }
+
+    // Show step
+    $(".stepNum").html($step);
   }
 
-  function drawPoint(x, y) {
+  function processCanvasClick(pixelX, pixelY) {
+    // Ignore if clicked on border
+    if (clickInCell(pixelX, pixelY)) {
+      var cellCoords = pixelToCellCoords(pixelX, pixelY);
+      var x = cellCoords.x,
+          y = cellCoords.y;
+      var newPoint = [x, y];
+      var idx = indexOf(newPoint, $figure);
+      if (idx > -1)
+        $figure.splice(idx, 1);
+      else
+        $figure.push(newPoint);
+      redrawState();
+    }
+  }
+
+  function pairEqual(a, b) {
+    return (a[0] == b[0]) && (a[1] == b[1])
+  }
+
+  function indexOf(el, arr) {
+    var idx = -1;
+    for (var i = 0; i < arr.length; i++) {
+      if (pairEqual(arr[i], el)) {
+        idx = i;
+        break;
+      }
+    }
+    return idx
+  }
+
+  function inArray(el, arr) {
+    return indexOf(el, arr) > -1
+  }
+
+  function pixelToCellCoords(pixelX, pixelY) {
+    return {
+      x: Math.floor((pixelX - $pixelOffX) / $cellSize),
+      y: Math.floor((pixelY - $pixelOffY) / $cellSize)
+    }
+  }
+
+  function clickInCell(pixelX, pixelY) {
+    return !((pixelX - $pixelOffX) % $cellSize == 0 || (pixelY - $pixelOffY) % $cellSize == 0)
+  }
+
+  function drawPoint(ctx, x, y) {
+    var canvasCenterX = (x * $cellSize) + $pixelOffX + $radius + 1,
+        canvasCenterY = (y * $cellSize) + $pixelOffY + $radius + 1;
     ctx.fillStyle = "green";
     ctx.beginPath();
-    ctx.arc(conv(x), conv(y), radius - 1.5, 0, 2*Math.PI);
+    ctx.arc(canvasCenterX, canvasCenterY, $radius, 0, 2 * Math.PI);
     ctx.fill();
   }
 
-  function clearPoint(x, y) {
-    var ux = conv2(x), uy = conv2(y);
-    ctx.clearRect(ux, uy, radius * 2, radius * 2);
-  }
+  $($canvas).on("mousedown", function (e) {
+    if (e.which === 1) { // Ignore right button
+      e.preventDefault();
+      dragX = e.clientX;
+      dragY = e.clientY;
+      $("body").css("cursor", "move");
+      $(document).on("mousemove", dragTheGrid);
+    }
+  });
 
-  function togglePoint(x, y) {
-    if (isFilled(x, y)) clearPoint(x, y);
-    else drawPoint(x, y);
-  }
+  $(document).on("mouseup", function (e) {
+    $(document).off("mousemove");
+    $("body").css("cursor", "default");
+    if (isDragging) {
+    }
+    else {
+      if (e.which === 1) processClick(e);
+    }
+    isDragging = false;
+  });
 
-  function isFilled(x, y) {
-    var p = ctx.getImageData(conv(x), conv(y), 1, 1).data;
-    return p[1] == 128;
-  }
+  $("button#plusSize").click(function () {
+    setNewScale(Math.round($cellSize * 1.6));
+  });
 
-  function conv(x) {
-    return x * cellSize + radius + 1;
-  }
-
-  function conv2(x) {
-    return x * cellSize + 1;
-  }
-
-  function unconv(x) {
-    return Math.floor((x - 2) / cellSize);
-  }
-
-  function processClick(event) {
-    var x = event.pageX - canvasLeft,
-        y = event.pageY - canvasTop;
-    console.log("x: " + x + ", y: " + y);
-    togglePoint(unconv(x), unconv(y));
-  }
-
-  resetField();
-
-  canvas.addEventListener('click', processClick, false);
+  $("button#minusSize").click(function () {
+    var result = Math.max(7, Math.round($cellSize / 1.6));
+    setNewScale(result);
+  });
 
   $("#stepBtn").click(processStep);
 
@@ -74,104 +165,91 @@ $( document ).ready(function() {
 
   $("#stopBtn").click(processStop);
 
-  $("#clearBtn").click(resetField);
+  $("button#clearBtn").click(function () {
+    $figure = [];
+    $step = 0;
+    $pixelOffX = $pixelOffX % $cellSize;
+    $pixelOffY = $pixelOffY % $cellSize;
+    redrawState();
+  });
+
+  function setNewScale(newCellSize) {
+    var scale = newCellSize / $cellSize;
+    $pixelOffX = ($canvas.width / 2) * (1 - scale) + (scale * $pixelOffX);
+    $pixelOffY = ($canvas.height / 2) * (1 - scale) + (scale * $pixelOffY);
+    $cellSize = newCellSize;
+    redrawState();
+  }
+
+  function dragTheGrid(e) {
+    e.preventDefault();
+    isDragging = true;
+    var newX = e.clientX, newY = e.clientY;
+    $pixelOffX = $pixelOffX + newX - dragX;
+    $pixelOffY = $pixelOffY + newY - dragY;
+    redrawState();
+    dragX = newX;
+    dragY = newY;
+  }
+
+  function processClick(e) {
+    var x = e.clientX, y = e.clientY,
+        pixelX = x - $canvas.offsetLeft - 1 - borderWidth,
+        pixelY = y - $canvas.offsetTop - 1 - borderWidth;
+    if (pixelX >= 0 && pixelX <= $canvas.width &&
+        pixelY >= 0 && pixelY <= $canvas.height) {
+      processCanvasClick(pixelX, pixelY);
+    }
+  }
 
   function processStep() {
-    var figure = readFigure();
-    var newfigure = convertFigure(figure);
-    redrawFigure(newfigure);
-    incrementStep();
+    convertFigure();
+    $step++;
+    redrawState();
   }
 
-  function processGo() {
-    var figure = readFigure();
-    if (figure.length > 0) {
-      var newfigure = convertFigure(figure);
-      redrawFigure(newfigure);
-      incrementStep();
-      timer = window.setTimeout(processGo, 50);
-    }
-    else timer = 0;
-  }
-
-  function processStop() {
-    if (timer) {
-      window.clearTimeout(timer);
-      timer = 0;
-    }
-  }
-
-  function readFigure() {
-    var result = [];
-    for (var i = 0; i < width / cellSize; i++) {
-      for (var j = 0; j < height / cellSize; j++) {
-        if (isFilled(i, j)) { result.push([i, j]) }
-      }
-    }
-    return result;
-  }
-
-  function convertFigure(figure) {
+  function convertFigure() {
 
     var newFigure = [], neighbours = {}, x, y, pnt, xpnt;
 
-    function insertNeighbour(a, b) {
-      if (neighbours[[a, b]]) {neighbours[[a, b]] = neighbours[[a, b]] + 1}
-      else neighbours[[a, b]] = 1;
-    }
-    function inArray(el, arr) {
-      for (var i = 0; i < arr.length; i++) {
-        if (el[0] == arr[i][0] && el[1] == arr[i][1]) return true;
-      }
-      return false;
-    }
-
-    for (var i = 0; i < figure.length; i ++) {
-      x = figure[i][0];
-      y = figure[i][1];
-      insertNeighbour(x - 1, y - 1);
-      insertNeighbour(x - 1, y);
-      insertNeighbour(x - 1, y + 1);
-      insertNeighbour(x, y - 1);
-      insertNeighbour(x, y + 1);
-      insertNeighbour(x + 1, y - 1);
-      insertNeighbour(x + 1, y);
-      insertNeighbour(x + 1, y + 1);
+    for (var i = 0; i < $figure.length; i ++) {
+      x = $figure[i][0];
+      y = $figure[i][1];
+      insertNeighbour(neighbours, x - 1, y - 1);
+      insertNeighbour(neighbours, x - 1, y);
+      insertNeighbour(neighbours, x - 1, y + 1);
+      insertNeighbour(neighbours, x, y - 1);
+      insertNeighbour(neighbours, x, y + 1);
+      insertNeighbour(neighbours, x + 1, y - 1);
+      insertNeighbour(neighbours, x + 1, y);
+      insertNeighbour(neighbours, x + 1, y + 1);
     }
     for (var key in neighbours) {
       xpnt = key.split(",");
       pnt = [parseInt(xpnt[0]), parseInt(xpnt[1])];
-      if (neighbours[pnt] == 3 || (neighbours[pnt] == 2 && inArray(pnt, figure))) newFigure.push(pnt);
+      if (neighbours[pnt] == 3 || (neighbours[pnt] == 2 && inArray(pnt, $figure))) newFigure.push(pnt);
     }
-    return newFigure;
+    $figure = newFigure;
   }
 
-  function redrawFigure(figure) {
-    clearField();
-    for (var i = 0; i < figure.length; i ++) {
-      drawPoint(figure[i][0], figure[i][1]);
+  function insertNeighbour(neighbours, a, b) {
+    if (neighbours[[a, b]]) {neighbours[[a, b]] = neighbours[[a, b]] + 1}
+    else neighbours[[a, b]] = 1;
+  }
+
+  function processGo() {
+    if ($figure.length > 0) {
+      $timer = window.setTimeout(processGo, 100);
+      processStep();
     }
+    else processStop;
   }
 
-  function clearField() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGrid();
+  function processStop() {
+    if ($timer) {
+      window.clearTimeout($timer);
+    }
+    $timer = 0;
   }
-
-  function resetField() {
-    clearField();
-    $step = 0;
-    showStep();
-  }
-
-  function showStep() {
-    $(".stepNum").html($step);
-  }
-
-  function incrementStep() {
-    $step++;
-    showStep();
-  }
-
 
 });
