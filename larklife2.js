@@ -11,6 +11,7 @@ $(document).ready(function () {
 
 
   var $radius,
+      $timer,
       borderWidth = parseInt($($canvas).css("border-width"));
 
   var isDragging = false, dragX, dragY;
@@ -104,6 +105,10 @@ $(document).ready(function () {
     return idx
   }
 
+  function inArray(el, arr) {
+    return indexOf(el, arr) > -1
+  }
+
   function pixelToCellCoords(pixelX, pixelY) {
     return {
       x: Math.floor((pixelX - $pixelOffX) / $cellSize),
@@ -125,11 +130,13 @@ $(document).ready(function () {
   }
 
   $($canvas).on("mousedown", function (e) {
-    e.preventDefault();
-    dragX = e.clientX;
-    dragY = e.clientY;
-    $("body").css("cursor", "move");
-    $(document).on("mousemove", dragTheGrid);
+    if (e.which === 1) { // Ignore right button
+      e.preventDefault();
+      dragX = e.clientX;
+      dragY = e.clientY;
+      $("body").css("cursor", "move");
+      $(document).on("mousemove", dragTheGrid);
+    }
   });
 
   $(document).on("mouseup", function (e) {
@@ -138,7 +145,7 @@ $(document).ready(function () {
     if (isDragging) {
     }
     else {
-      processClick(e);
+      if (e.which === 1) processClick(e);
     }
     isDragging = false;
   });
@@ -151,6 +158,12 @@ $(document).ready(function () {
     var result = Math.max(7, Math.round($cellSize / 1.6));
     setNewScale(result);
   });
+
+  $("#stepBtn").click(processStep);
+
+  $("#goBtn").click(processGo);
+
+  $("#stopBtn").click(processStop);
 
   $("button#clearBtn").click(function () {
     $figure = [];
@@ -187,6 +200,56 @@ $(document).ready(function () {
         pixelY >= 0 && pixelY <= $canvas.height) {
       processCanvasClick(pixelX, pixelY);
     }
+  }
+
+  function processStep() {
+    convertFigure();
+    $step++;
+    redrawState();
+  }
+
+  function convertFigure() {
+
+    var newFigure = [], neighbours = {}, x, y, pnt, xpnt;
+
+    for (var i = 0; i < $figure.length; i ++) {
+      x = $figure[i][0];
+      y = $figure[i][1];
+      insertNeighbour(neighbours, x - 1, y - 1);
+      insertNeighbour(neighbours, x - 1, y);
+      insertNeighbour(neighbours, x - 1, y + 1);
+      insertNeighbour(neighbours, x, y - 1);
+      insertNeighbour(neighbours, x, y + 1);
+      insertNeighbour(neighbours, x + 1, y - 1);
+      insertNeighbour(neighbours, x + 1, y);
+      insertNeighbour(neighbours, x + 1, y + 1);
+    }
+    for (var key in neighbours) {
+      xpnt = key.split(",");
+      pnt = [parseInt(xpnt[0]), parseInt(xpnt[1])];
+      if (neighbours[pnt] == 3 || (neighbours[pnt] == 2 && inArray(pnt, $figure))) newFigure.push(pnt);
+    }
+    $figure = newFigure;
+  }
+
+  function insertNeighbour(neighbours, a, b) {
+    if (neighbours[[a, b]]) {neighbours[[a, b]] = neighbours[[a, b]] + 1}
+    else neighbours[[a, b]] = 1;
+  }
+
+  function processGo() {
+    if ($figure.length > 0) {
+      $timer = window.setTimeout(processGo, 100);
+      processStep();
+    }
+    else processStop;
+  }
+
+  function processStop() {
+    if ($timer) {
+      window.clearTimeout($timer);
+    }
+    $timer = 0;
   }
 
 });
