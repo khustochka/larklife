@@ -10,9 +10,18 @@ body {
 
 canvas {
     border: 1px solid black;
+    width: 700px;
+    height: 300px;
 }
 
 button {
     width: 75px;
     height: 35px;
+}
+
+.stepNum {
+    display: inline-block;
+    width: 300px;
+    text-align: right;
+    font-family: Lucida Sans Typewriter,Lucida Console,monaco,Bitstream Vera Sans Mono,monospace;
 }

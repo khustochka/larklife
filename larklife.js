@@ -2,11 +2,11 @@ $( document ).ready(function() {
 
   var canvas = document.getElementById("lc");
   var ctx = canvas.getContext("2d");
-  var width = 700, height = 300, cellSize = 18, radius = (cellSize - 1) / 2;
+  var width = $(canvas).width(), height = $(canvas).height(), cellSize = 18, radius = (cellSize - 1) / 2;
   var
       canvasLeft = canvas.offsetLeft,
       canvasTop = canvas.offsetTop;
-  var $figure = [], timer = 0;
+  var $figure = [], timer = 0, $step = 0;
 
   function drawGrid() {
     ctx.beginPath();
@@ -64,7 +64,7 @@ $( document ).ready(function() {
     togglePoint(unconv(x), unconv(y));
   }
 
-  drawGrid();
+  resetField();
 
   canvas.addEventListener('click', processClick, false);
 
@@ -74,12 +74,13 @@ $( document ).ready(function() {
 
   $("#stopBtn").click(processStop);
 
-  $("#clearBtn").click(clearField);
+  $("#clearBtn").click(resetField);
 
   function processStep() {
     var figure = readFigure();
     var newfigure = convertFigure(figure);
     redrawFigure(newfigure);
+    incrementStep();
   }
 
   function processGo() {
@@ -87,6 +88,7 @@ $( document ).ready(function() {
     if (figure.length > 0) {
       var newfigure = convertFigure(figure);
       redrawFigure(newfigure);
+      incrementStep();
       timer = window.setTimeout(processGo, 50);
     }
     else timer = 0;
@@ -155,5 +157,21 @@ $( document ).ready(function() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawGrid();
   }
+
+  function resetField() {
+    clearField();
+    $step = 0;
+    showStep();
+  }
+
+  function showStep() {
+    $(".stepNum").html($step);
+  }
+
+  function incrementStep() {
+    $step++;
+    showStep();
+  }
+
 
 });
