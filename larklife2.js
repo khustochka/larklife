@@ -10,8 +10,6 @@ $(document).ready(function () {
       $cellSize = 18;
 
 
-  // TODO: resize from center. better add/remove point (break loop)
-
   var $radius,
       borderWidth = parseInt($($canvas).css("border-width"));
 
@@ -72,19 +70,29 @@ $(document).ready(function () {
       var cellCoords = pixelToCellCoords(pixelX, pixelY);
       var x = cellCoords.x,
           y = cellCoords.y;
-      var removed = false;
-      var newFigure = [];
       var newPoint = [x, y];
-      for (var i = 0; i < $figure.length; i++) {
-        if (removed || ($figure[i][0] != newPoint[0] || $figure[i][1] != newPoint[1])) newFigure.push($figure[i]);
-        else removed = true;
-      }
-      if (!removed) {
-        newFigure.push(newPoint)
-      }
-      $figure = newFigure;
+      var idx = indexOf(newPoint, $figure);
+      if (idx > -1)
+        $figure.splice(idx, 1);
+      else
+        $figure.push(newPoint);
       redrawState();
     }
+  }
+
+  function pairEqual(a, b) {
+    return (a[0] == b[0]) && (a[1] == b[1])
+  }
+
+  function indexOf(el, arr) {
+    var idx = -1;
+    for (var i = 0; i < arr.length; i++) {
+      if (pairEqual(arr[i], el)) {
+        idx = i;
+        break;
+      }
+    }
+    return idx
   }
 
   function pixelToCellCoords(pixelX, pixelY) {
@@ -108,6 +116,7 @@ $(document).ready(function () {
   }
 
   $($canvas).on("mousedown", function (e) {
+    e.preventDefault();
     dragX = e.clientX;
     dragY = e.clientY;
     $("body").css("cursor", "move");
@@ -132,6 +141,14 @@ $(document).ready(function () {
   $("button#minusSize").click(function () {
     var result = Math.max(7, Math.round($cellSize / 1.6));
     setNewScale(result);
+  });
+
+  $("button#clearBtn").click(function () {
+    $figure = [];
+    $step = 0;
+    $pixelOffX = -1;
+    $pixelOffY = -1;
+    redrawState();
   });
 
   function setNewScale(newCellSize) {
