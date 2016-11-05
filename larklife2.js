@@ -3,7 +3,7 @@ $( document ).ready(function() {
   var $canvas = document.getElementById("lc");
 
   // State
-  var $figure = [],
+  var $figure = [[1, 1]],
       $step = 0,
       $pixelOffX = 0,
       $pixelOffY = 0,
@@ -21,7 +21,7 @@ $( document ).ready(function() {
     var canvasWidth = $canvas.width,
         canvasHeight = $canvas.height;
 
-    $radius = Math.floor(($cellSize - 1) / 2) - 0.5;
+    $radius = ($cellSize - 1) / 2;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -66,8 +66,8 @@ $( document ).ready(function() {
   }
 
   function drawPoint(ctx, x, y) {
-    var canvasCenterX = (x * $cellSize) + $pixelOffX + $radius + 1.5,
-        canvasCenterY = (y * $cellSize) + $pixelOffY + $radius + 1.5;
+    var canvasCenterX = (x * $cellSize) + $pixelOffX + $radius + 1,
+        canvasCenterY = (y * $cellSize) + $pixelOffY + $radius + 1;
     ctx.fillStyle = "green";
     ctx.beginPath();
     ctx.arc(canvasCenterX, canvasCenterY, $radius, 0, 2*Math.PI);
