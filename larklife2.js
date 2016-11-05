@@ -15,7 +15,16 @@ $(document).ready(function () {
 
   var isDragging = false, dragX, dragY;
 
-  redrawState();
+  window.addEventListener('resize', resizeCanvas, false);
+
+  resizeCanvas();
+
+  function resizeCanvas() {
+    $canvas.width = window.innerWidth;
+    $canvas.height = window.innerHeight * 0.7;
+
+    redrawState();
+  }
 
   function redrawState() {
     // Find canvas
@@ -146,8 +155,8 @@ $(document).ready(function () {
   $("button#clearBtn").click(function () {
     $figure = [];
     $step = 0;
-    $pixelOffX = -1;
-    $pixelOffY = -1;
+    $pixelOffX = $pixelOffX % $cellSize;
+    $pixelOffY = $pixelOffY % $cellSize;
     redrawState();
   });
 
