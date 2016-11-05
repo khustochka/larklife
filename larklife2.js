@@ -1,13 +1,16 @@
-$( document ).ready(function() {
+$(document).ready(function () {
 
   var $canvas = document.getElementById("lc");
 
   // State
   var $figure = [[1, 1]],
       $step = 0,
-      $pixelOffX = 0,
-      $pixelOffY = 0,
+      $pixelOffX = -1,
+      $pixelOffY = -1,
       $cellSize = 18;
+
+
+  // TODO: resize from center. better add/remove point (break loop)
 
   var $radius;
 
@@ -65,7 +68,7 @@ $( document ).ready(function() {
   function processCanvasClick(pixelX, pixelY) {
     // Ignore if clicked on border
     if (clickInCell(pixelX, pixelY)) {
-      var cellCoords = pixelToCellCoords(pixelX - $canvas.offsetLeft, pixelY - $canvas.offsetTop);
+      var cellCoords = pixelToCellCoords(pixelX, pixelY);
       var x = cellCoords.x,
           y = cellCoords.y;
       var removed = false;
@@ -91,7 +94,7 @@ $( document ).ready(function() {
   }
 
   function clickInCell(pixelX, pixelY) {
-    return !((pixelX - $pixelOffX) % $cellSize == 0 || (pixelY - $pixelOffY) / $cellSize == 0)
+    return !((pixelX - $pixelOffX) % $cellSize == 0 || (pixelY - $pixelOffY) % $cellSize == 0)
   }
 
   function drawPoint(ctx, x, y) {
@@ -99,18 +102,18 @@ $( document ).ready(function() {
         canvasCenterY = (y * $cellSize) + $pixelOffY + $radius + 1;
     ctx.fillStyle = "green";
     ctx.beginPath();
-    ctx.arc(canvasCenterX, canvasCenterY, $radius, 0, 2*Math.PI);
+    ctx.arc(canvasCenterX, canvasCenterY, $radius, 0, 2 * Math.PI);
     ctx.fill();
   }
 
-  $($canvas).on("mousedown", function(e) {
+  $($canvas).on("mousedown", function (e) {
     dragX = e.clientX;
     dragY = e.clientY;
     $("body").css("cursor", "move");
     $(document).on("mousemove", dragTheGrid);
   });
 
-  $(document).on("mouseup", function(e) {
+  $(document).on("mouseup", function (e) {
     $(document).off("mousemove");
     $("body").css("cursor", "default");
     if (isDragging) {
@@ -121,12 +124,12 @@ $( document ).ready(function() {
     isDragging = false;
   });
 
-  $("button#plusSize").click(function() {
+  $("button#plusSize").click(function () {
     $cellSize = Math.round($cellSize * 1.6);
     redrawState();
   });
 
-  $("button#minusSize").click(function() {
+  $("button#minusSize").click(function () {
     var result = Math.round($cellSize / 1.6);
     if (result < 7) $cellSize = 7;
     else $cellSize = result;
@@ -145,10 +148,12 @@ $( document ).ready(function() {
   }
 
   function processClick(e) {
-    var x = e.clientX, y = e.clientY;
-    if (x >= $canvas.offsetLeft && x <= ($canvas.offsetLeft + $canvas.width) &&
-        y >= $canvas.offsetTop && y <= ($canvas.offsetTop + $canvas.height)) {
-      processCanvasClick(x, y);
+    var x = e.clientX, y = e.clientY,
+        pixelX = x - $canvas.offsetLeft - 2,
+        pixelY = y - $canvas.offsetTop - 2;
+    if (pixelX >= 0 && pixelX <= $canvas.width &&
+        pixelY >= 0 && pixelY <= $canvas.height) {
+      processCanvasClick(pixelX, pixelY);
     }
   }
 
