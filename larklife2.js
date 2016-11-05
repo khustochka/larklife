@@ -9,6 +9,8 @@ $( document ).ready(function() {
       $pixelOffY = 0,
       $cellSize = 18;
 
+  var $radius;
+
   var isMouseDown = false, dragX, dragY;
 
   redrawState();
@@ -19,12 +21,12 @@ $( document ).ready(function() {
     var canvasWidth = $canvas.width,
         canvasHeight = $canvas.height;
 
+    $radius = Math.floor(($cellSize - 1) / 2) - 0.5;
+
     // Clear canvas
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     // Draw grid
-
-    // Cicle through canvas pixels
 
     var offRemainderX = $pixelOffX % $cellSize,
         offRemainderY = $pixelOffY % $cellSize;
@@ -43,9 +45,33 @@ $( document ).ready(function() {
     ctx.stroke();
 
     // Draw points
+    var point,
+        visibleMinX = Math.floor(-$pixelOffX / $cellSize),
+        visibleMinY = Math.floor(-$pixelOffY / $cellSize),
+        visibleMaxX = Math.floor((canvasWidth - 1 - $pixelOffX) / $cellSize),
+        visibleMaxY = Math.floor((canvasHeight - 1 - $pixelOffY) / $cellSize)
+        ;
+
+    for (var i = 0; i < $figure.length; i++) {
+      point = $figure[i];
+      var x = point[0], y = point[1];
+      if (x >= visibleMinX && x <= visibleMaxX && y >= visibleMinY && y <= visibleMaxY) {
+        drawPoint(ctx, x, y);
+        console.log(x + " ; " + y);
+      }
+    }
 
     // Show step
     $(".stepNum").html($step);
+  }
+
+  function drawPoint(ctx, x, y) {
+    var canvasCenterX = (x * $cellSize) + $pixelOffX + $radius + 1.5,
+        canvasCenterY = (y * $cellSize) + $pixelOffY + $radius + 1.5;
+    ctx.fillStyle = "green";
+    ctx.beginPath();
+    ctx.arc(canvasCenterX, canvasCenterY, $radius, 0, 2*Math.PI);
+    ctx.fill();
   }
 
   $($canvas).on("mousedown", function(e) {
