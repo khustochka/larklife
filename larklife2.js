@@ -21,7 +21,7 @@ $(document).ready(function () {
 
   function resizeCanvas() {
     $canvas.width = window.innerWidth;
-    $canvas.height = window.innerHeight * 0.7;
+    $canvas.height = window.innerHeight;
 
     redrawState();
   }
