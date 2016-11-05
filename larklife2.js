@@ -11,7 +11,7 @@ $( document ).ready(function() {
 
   var $radius;
 
-  var isMouseDown = false, dragX, dragY;
+  var isDragging = false, dragX, dragY;
 
   redrawState();
 
@@ -46,23 +46,52 @@ $( document ).ready(function() {
 
     // Draw points
     var point,
-        visibleMinX = Math.floor(-$pixelOffX / $cellSize),
-        visibleMinY = Math.floor(-$pixelOffY / $cellSize),
-        visibleMaxX = Math.floor((canvasWidth - 1 - $pixelOffX) / $cellSize),
-        visibleMaxY = Math.floor((canvasHeight - 1 - $pixelOffY) / $cellSize)
-        ;
+        visibleMin = pixelToCellCoords(0, 0),
+        visibleMax = pixelToCellCoords(canvasWidth - 1, canvasHeight - 1);
 
     for (var i = 0; i < $figure.length; i++) {
       point = $figure[i];
       var x = Math.floor(point[0]), y = Math.floor(point[1]);
-      if (x >= visibleMinX && x <= visibleMaxX && y >= visibleMinY && y <= visibleMaxY) {
+      if (x >= visibleMin.x && x <= visibleMax.x && y >= visibleMin.y && y <= visibleMax.y) {
         drawPoint(ctx, x, y);
-        console.log(x + " ; " + y);
+        //console.log(x + " ; " + y);
       }
     }
 
     // Show step
     $(".stepNum").html($step);
+  }
+
+  function processCanvasClick(pixelX, pixelY) {
+    // Ignore if clicked on border
+    if (clickInCell(pixelX, pixelY)) {
+      var cellCoords = pixelToCellCoords(pixelX - $canvas.offsetLeft, pixelY - $canvas.offsetTop);
+      var x = cellCoords.x,
+          y = cellCoords.y;
+      var removed = false;
+      var newFigure = [];
+      var newPoint = [x, y];
+      for (var i = 0; i < $figure.length; i++) {
+        if (removed || ($figure[i][0] != newPoint[0] || $figure[i][1] != newPoint[1])) newFigure.push($figure[i]);
+        else removed = true;
+      }
+      if (!removed) {
+        newFigure.push(newPoint)
+      }
+      $figure = newFigure;
+      redrawState();
+    }
+  }
+
+  function pixelToCellCoords(pixelX, pixelY) {
+    return {
+      x: Math.floor((pixelX - $pixelOffX) / $cellSize),
+      y: Math.floor((pixelY - $pixelOffY) / $cellSize)
+    }
+  }
+
+  function clickInCell(pixelX, pixelY) {
+    return !((pixelX - $pixelOffX) % $cellSize == 0 || (pixelY - $pixelOffY) / $cellSize == 0)
   }
 
   function drawPoint(ctx, x, y) {
@@ -75,19 +104,21 @@ $( document ).ready(function() {
   }
 
   $($canvas).on("mousedown", function(e) {
-    isMouseDown = true;
     dragX = e.clientX;
     dragY = e.clientY;
     $("body").css("cursor", "move");
     $(document).on("mousemove", dragTheGrid);
   });
 
-  $(document).on("mouseup", function() {
-    if (isMouseDown) {
-      $(document).off("mousemove");
-      $("body").css("cursor", "default");
-      isMouseDown = false;
+  $(document).on("mouseup", function(e) {
+    $(document).off("mousemove");
+    $("body").css("cursor", "default");
+    if (isDragging) {
     }
+    else {
+      processClick(e);
+    }
+    isDragging = false;
   });
 
   $("button#plusSize").click(function() {
@@ -104,6 +135,7 @@ $( document ).ready(function() {
 
   function dragTheGrid(e) {
     e.preventDefault();
+    isDragging = true;
     var newX = e.clientX, newY = e.clientY;
     $pixelOffX = $pixelOffX + newX - dragX;
     $pixelOffY = $pixelOffY + newY - dragY;
@@ -111,5 +143,13 @@ $( document ).ready(function() {
     dragX = newX;
     dragY = newY;
   }
-  
+
+  function processClick(e) {
+    var x = e.clientX, y = e.clientY;
+    if (x >= $canvas.offsetLeft && x <= ($canvas.offsetLeft + $canvas.width) &&
+        y >= $canvas.offsetTop && y <= ($canvas.offsetTop + $canvas.height)) {
+      processCanvasClick(x, y);
+    }
+  }
+
 });
