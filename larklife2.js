@@ -3,7 +3,7 @@ $(document).ready(function () {
   var $canvas = document.getElementById("lc");
 
   // State
-  var $figure = [[1, 1]],
+  var $figure = [],
       $step = 0,
       $pixelOffX = -1,
       $pixelOffY = -1,
@@ -12,7 +12,8 @@ $(document).ready(function () {
 
   // TODO: resize from center. better add/remove point (break loop)
 
-  var $radius;
+  var $radius,
+      borderWidth = parseInt($($canvas).css("border-width"));
 
   var isDragging = false, dragX, dragY;
 
@@ -125,16 +126,21 @@ $(document).ready(function () {
   });
 
   $("button#plusSize").click(function () {
-    $cellSize = Math.round($cellSize * 1.6);
-    redrawState();
+    setNewScale(Math.round($cellSize * 1.6));
   });
 
   $("button#minusSize").click(function () {
-    var result = Math.round($cellSize / 1.6);
-    if (result < 7) $cellSize = 7;
-    else $cellSize = result;
-    redrawState();
+    var result = Math.max(7, Math.round($cellSize / 1.6));
+    setNewScale(result);
   });
+
+  function setNewScale(newCellSize) {
+    var scale = newCellSize / $cellSize;
+    $pixelOffX = ($canvas.width / 2) * (1 - scale) + (scale * $pixelOffX);
+    $pixelOffY = ($canvas.height / 2) * (1 - scale) + (scale * $pixelOffY);
+    $cellSize = newCellSize;
+    redrawState();
+  }
 
   function dragTheGrid(e) {
     e.preventDefault();
@@ -149,8 +155,8 @@ $(document).ready(function () {
 
   function processClick(e) {
     var x = e.clientX, y = e.clientY,
-        pixelX = x - $canvas.offsetLeft - 2,
-        pixelY = y - $canvas.offsetTop - 2;
+        pixelX = x - $canvas.offsetLeft - 1 - borderWidth,
+        pixelY = y - $canvas.offsetTop - 1 - borderWidth;
     if (pixelX >= 0 && pixelX <= $canvas.width &&
         pixelY >= 0 && pixelY <= $canvas.height) {
       processCanvasClick(pixelX, pixelY);
