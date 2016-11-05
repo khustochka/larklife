@@ -64,6 +64,18 @@ $( document ).ready(function() {
     }
   });
 
+  $("button#plusSize").click(function() {
+    $cellSize = Math.round($cellSize * 1.6);
+    redrawState();
+  });
+
+  $("button#minusSize").click(function() {
+    var result = Math.round($cellSize / 1.6);
+    if (result < 7) $cellSize = 7;
+    else $cellSize = result;
+    redrawState();
+  });
+
   function dragTheGrid(e) {
     var newX = e.clientX, newY = e.clientY;
     $pixelOffX = $pixelOffX + newX - dragX;
