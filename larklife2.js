@@ -3,7 +3,7 @@ $( document ).ready(function() {
   var $canvas = document.getElementById("lc");
 
   // State
-  var $figure = [[0, 0]],
+  var $figure = [],
       $step = 0,
       $pixelOffX = 0,
       $pixelOffY = 0,
@@ -54,7 +54,7 @@ $( document ).ready(function() {
 
     for (var i = 0; i < $figure.length; i++) {
       point = $figure[i];
-      var x = point[0], y = point[1];
+      var x = Math.floor(point[0]), y = Math.floor(point[1]);
       if (x >= visibleMinX && x <= visibleMaxX && y >= visibleMinY && y <= visibleMaxY) {
         drawPoint(ctx, x, y);
         console.log(x + " ; " + y);
