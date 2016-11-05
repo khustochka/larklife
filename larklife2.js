@@ -103,6 +103,7 @@ $( document ).ready(function() {
   });
 
   function dragTheGrid(e) {
+    e.preventDefault();
     var newX = e.clientX, newY = e.clientY;
     $pixelOffX = $pixelOffX + newX - dragX;
     $pixelOffY = $pixelOffY + newY - dragY;
