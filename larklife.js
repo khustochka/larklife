@@ -13,8 +13,7 @@ $(document).ready(function () {
 
   var $radius,
       $timer,
-      $history = null,
-      borderWidth = parseInt($($canvas).css("border-width"));
+      $history = null;
 
   var speedOptions = [0.001, 0.01, 0.05, 0.1, 0.5, 1],
       $speedIndex = 3;
@@ -178,6 +177,7 @@ $(document).ready(function () {
   });
 
   $(document).on("mouseup", function (e) {
+    e.preventDefault();
     $(document).off("mousemove");
     $("body").css("cursor", "default");
     if (isDragging) {
@@ -231,8 +231,8 @@ $(document).ready(function () {
 
   function processClick(e) {
     var x = e.clientX, y = e.clientY,
-        pixelX = x - $canvas.offsetLeft - 1 - borderWidth,
-        pixelY = y - $canvas.offsetTop - 1 - borderWidth;
+        pixelX = x - $canvas.offsetLeft - 1,
+        pixelY = y - $canvas.offsetTop - 1;
     if (pixelX >= 0 && pixelX <= $canvas.width &&
         pixelY >= 0 && pixelY <= $canvas.height) {
       processCanvasClick(pixelX, pixelY);
