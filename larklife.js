@@ -7,7 +7,8 @@ $(document).ready(function () {
       $step = 0,
       $pixelOffX = -1,
       $pixelOffY = -1,
-      $cellSize = 18;
+      $cellSize = 18,
+      $showGrid = true;
 
 
   var $radius,
@@ -17,7 +18,7 @@ $(document).ready(function () {
 
   var isDragging = false, isMouseDown = false, dragX, dragY;
 
-  var glider = [[2,1],[3,2],[1,3],[2,3],[3,3]];
+  var glider = [[2, 1], [3, 2], [1, 3], [2, 3], [3, 3]];
 
   window.addEventListener('resize', resizeCanvas, false);
 
@@ -42,22 +43,23 @@ $(document).ready(function () {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     // Draw grid
+    if ($showGrid) {
+      var offRemainderX = $pixelOffX % $cellSize,
+          offRemainderY = $pixelOffY % $cellSize;
 
-    var offRemainderX = $pixelOffX % $cellSize,
-        offRemainderY = $pixelOffY % $cellSize;
-
-    ctx.beginPath();
-    ctx.strokeStyle = 'lightblue';
-    ctx.lineWidth = 1;
-    for (var rx = 0.5 + offRemainderX; rx < canvasWidth; rx = rx + $cellSize) {
-      ctx.moveTo(rx, 0);
-      ctx.lineTo(rx, canvasHeight);
+      ctx.beginPath();
+      ctx.strokeStyle = 'lightblue';
+      ctx.lineWidth = 1;
+      for (var rx = 0.5 + offRemainderX; rx < canvasWidth; rx = rx + $cellSize) {
+        ctx.moveTo(rx, 0);
+        ctx.lineTo(rx, canvasHeight);
+      }
+      for (var ry = 0.5 + offRemainderY; ry < canvasHeight; ry = ry + $cellSize) {
+        ctx.moveTo(0, ry);
+        ctx.lineTo(canvasWidth, ry);
+      }
+      ctx.stroke();
     }
-    for (var ry = 0.5 + offRemainderY; ry < canvasHeight; ry = ry + $cellSize) {
-      ctx.moveTo(0, ry);
-      ctx.lineTo(canvasWidth, ry);
-    }
-    ctx.stroke();
 
     // Draw points
     var point,
@@ -91,7 +93,7 @@ $(document).ready(function () {
         }
         else {
           // Restart evolution if it was running
-          if (autoGo) processGo();
+          if (autoGo) performGo();
           return false; // Exit
         }
       }
@@ -117,6 +119,7 @@ $(document).ready(function () {
   function resetEvolutionState() {
     $step = 0;
     $history = null;
+    dropNotice();
   }
 
   function pairEqual(a, b) {
@@ -146,7 +149,8 @@ $(document).ready(function () {
   }
 
   function clickInCell(pixelX, pixelY) {
-    return !((pixelX - $pixelOffX) % $cellSize == 0 || (pixelY - $pixelOffY) % $cellSize == 0)
+    // Check that click is not on the grid, but only if the grid is shown
+    return !($showGrid && (pixelX - $pixelOffX) % $cellSize == 0 || (pixelY - $pixelOffY) % $cellSize == 0)
   }
 
   function drawPoint(ctx, x, y) {
@@ -232,11 +236,22 @@ $(document).ready(function () {
   }
 
   function processStep() {
-    if ($figure.length > 0) {
-      convertFigure();
-      $step++;
-      redrawState();
+    if (!$timer) performStep();
+  }
+
+  // Returns true if progress goes on, false if stopped
+  function performStep() {
+    // If config is empty initially, just ignore.
+    if ($figure.length == 0) return false;
+    convertFigure();
+    $step++;
+    redrawState();
+    // If it has become empty.
+    if ($figure.length == 0) {
+      showNotice("The population died out on step " + $step + ".");
+      return false
     }
+    else return true;
   }
 
   function convertFigure() {
@@ -271,10 +286,14 @@ $(document).ready(function () {
   }
 
   function processGo() {
-    if ($figure.length > 0) {
-      processStep();
-      $timer = window.setTimeout(processGo, 100);
+    if (!$timer){
+      performGo();
     }
+  }
+
+  function performGo() {
+    var result = performStep();
+    if (result) $timer = window.setTimeout(performGo, 1);
     else processStop();
   }
 
@@ -294,7 +313,7 @@ $(document).ready(function () {
       }
       else {
         // Restart evolution if it was running
-        if (autoGo) processGo();
+        if (autoGo) performGo();
         return false;
       }
     }
@@ -303,6 +322,19 @@ $(document).ready(function () {
     $pixelOffY = $pixelOffY % $cellSize;
     $figure = newFigure;
     redrawState();
+  }
+
+  function showNotice(text) {
+    var notice = $(".notice");
+    notice.html(text);
+    notice.show();
+    notice.css("left", ($canvas.width - notice.width()) / 2 + "px");
+  }
+
+  function dropNotice() {
+    var notice = $(".notice");
+    notice.html("");
+    notice.hide();
   }
 
 });
