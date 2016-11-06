@@ -73,8 +73,9 @@ $(document).ready(function () {
       }
     }
 
-    // Show step
+    // Show step and size
     $(".stepNum").html($step);
+    $(".sizeNum").html($figure.length);
   }
 
   function processCanvasClick(pixelX, pixelY) {
