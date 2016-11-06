@@ -46,7 +46,7 @@ $(document).ready(function () {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     // Draw grid
-    if ($showGrid) {
+    if (doShowGrid()) {
       var offRemainderX = $pixelOffX % $cellSize,
           offRemainderY = $pixelOffY % $cellSize;
 
@@ -153,8 +153,13 @@ $(document).ready(function () {
 
   function clickInCell(pixelX, pixelY) {
     // Check that click is not on the grid, but only if the grid is shown
-    return !($showGrid && (pixelX - $pixelOffX) % $cellSize == 0 || (pixelY - $pixelOffY) % $cellSize == 0)
+    return !(doShowGrid() && (pixelX - $pixelOffX) % $cellSize == 0 || (pixelY - $pixelOffY) % $cellSize == 0)
   }
+
+  function doShowGrid() {
+    return $showGrid && $cellSize >= 7
+  }
+
 
   function drawPoint(ctx, x, y) {
     var canvasCenterX = (x * $cellSize) + $pixelOffX + $radius + 1,
@@ -194,7 +199,7 @@ $(document).ready(function () {
   });
 
   $("button#minusSize").click(function () {
-    var result = Math.max(7, Math.round($cellSize / 1.6));
+    var result = Math.round($cellSize / 1.6);
     setNewScale(result);
   });
 
