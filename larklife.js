@@ -12,9 +12,10 @@ $(document).ready(function () {
 
   var $radius,
       $timer,
+      $history,
       borderWidth = parseInt($($canvas).css("border-width"));
 
-  var isDragging = false, dragX, dragY;
+  var isDragging = false, isMouseDown = false, dragX, dragY;
 
   window.addEventListener('resize', resizeCanvas, false);
 
@@ -77,17 +78,38 @@ $(document).ready(function () {
   function processCanvasClick(pixelX, pixelY) {
     // Ignore if clicked on border
     if (clickInCell(pixelX, pixelY)) {
-      var cellCoords = pixelToCellCoords(pixelX, pixelY);
-      var x = cellCoords.x,
-          y = cellCoords.y;
-      var newPoint = [x, y];
-      var idx = indexOf(newPoint, $figure);
-      if (idx > -1)
-        $figure.splice(idx, 1);
-      else
-        $figure.push(newPoint);
-      redrawState();
+      // Ask user if he wants to override the current evolution
+      if ($step > 0 && $figure.length > 0) {
+        // If evolution is running stop it
+        var autoGo = !!$timer;
+        if (autoGo) processStop();
+        if (window.confirm("Evolution is in progress. Do you really want to intervene?")) {
+          // Do nothing if customer agrees
+        }
+        else {
+          // Restart evolution if it was running
+          if (autoGo) processGo();
+          return false; // Exit
+        }
+      }
+      toggleCell(pixelX, pixelY)
     }
+  }
+
+  function toggleCell(pixelX, pixelY) {
+    var cellCoords = pixelToCellCoords(pixelX, pixelY);
+    var x = cellCoords.x,
+        y = cellCoords.y;
+    var newPoint = [x, y];
+    var idx = indexOf(newPoint, $figure);
+    if (idx > -1)
+      $figure.splice(idx, 1);
+    else
+      $figure.push(newPoint);
+    // Adding or removing a cell resets the step counter and history
+    $step = 0;
+    $history = null;
+    redrawState();
   }
 
   function pairEqual(a, b) {
@@ -135,6 +157,7 @@ $(document).ready(function () {
       dragX = e.clientX;
       dragY = e.clientY;
       $("body").css("cursor", "move");
+      isMouseDown = true;
       $(document).on("mousemove", dragTheGrid);
     }
   });
@@ -145,8 +168,9 @@ $(document).ready(function () {
     if (isDragging) {
     }
     else {
-      if (e.which === 1) processClick(e);
+      if (isMouseDown && e.which === 1) processClick(e);
     }
+    isMouseDown = false;
     isDragging = false;
   });
 
@@ -166,8 +190,21 @@ $(document).ready(function () {
   $("#stopBtn").click(processStop);
 
   $("button#clearBtn").click(function () {
+    // If evolution is running stop it
+    var autoGo = !!$timer;
+    if (autoGo) {
+      processStop();
+      if (window.confirm("Evolution is in progress. Do you really want to clear the field?")) {
+      }
+      else {
+        // Restart evolution if it was running
+        if (autoGo) processGo();
+        return false;
+      }
+    }
     $figure = [];
     $step = 0;
+    $history = null;
     $pixelOffX = $pixelOffX % $cellSize;
     $pixelOffY = $pixelOffY % $cellSize;
     redrawState();
@@ -182,14 +219,16 @@ $(document).ready(function () {
   }
 
   function dragTheGrid(e) {
-    e.preventDefault();
-    isDragging = true;
-    var newX = e.clientX, newY = e.clientY;
-    $pixelOffX = $pixelOffX + newX - dragX;
-    $pixelOffY = $pixelOffY + newY - dragY;
-    redrawState();
-    dragX = newX;
-    dragY = newY;
+    if (isMouseDown) {
+      e.preventDefault();
+      isDragging = true;
+      var newX = e.clientX, newY = e.clientY;
+      $pixelOffX = $pixelOffX + newX - dragX;
+      $pixelOffY = $pixelOffY + newY - dragY;
+      redrawState();
+      dragX = newX;
+      dragY = newY;
+    }
   }
 
   function processClick(e) {
@@ -203,16 +242,18 @@ $(document).ready(function () {
   }
 
   function processStep() {
-    convertFigure();
-    $step++;
-    redrawState();
+    if ($figure.length > 0) {
+      convertFigure();
+      $step++;
+      redrawState();
+    }
   }
 
   function convertFigure() {
 
     var newFigure = [], neighbours = {}, x, y, pnt, xpnt;
 
-    for (var i = 0; i < $figure.length; i ++) {
+    for (var i = 0; i < $figure.length; i++) {
       x = $figure[i][0];
       y = $figure[i][1];
       insertNeighbour(neighbours, x - 1, y - 1);
@@ -233,7 +274,9 @@ $(document).ready(function () {
   }
 
   function insertNeighbour(neighbours, a, b) {
-    if (neighbours[[a, b]]) {neighbours[[a, b]] = neighbours[[a, b]] + 1}
+    if (neighbours[[a, b]]) {
+      neighbours[[a, b]] = neighbours[[a, b]] + 1
+    }
     else neighbours[[a, b]] = 1;
   }
 
@@ -242,7 +285,7 @@ $(document).ready(function () {
       $timer = window.setTimeout(processGo, 100);
       processStep();
     }
-    else processStop;
+    else processStop();
   }
 
   function processStop() {
