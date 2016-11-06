@@ -12,10 +12,12 @@ $(document).ready(function () {
 
   var $radius,
       $timer,
-      $history,
+      $history = null,
       borderWidth = parseInt($($canvas).css("border-width"));
 
   var isDragging = false, isMouseDown = false, dragX, dragY;
+
+  var glider = [[2,1],[3,2],[1,3],[2,3],[3,3]];
 
   window.addEventListener('resize', resizeCanvas, false);
 
@@ -107,9 +109,13 @@ $(document).ready(function () {
     else
       $figure.push(newPoint);
     // Adding or removing a cell resets the step counter and history
+    resetEvolutionState();
+    redrawState();
+  }
+
+  function resetEvolutionState() {
     $step = 0;
     $history = null;
-    redrawState();
   }
 
   function pairEqual(a, b) {
@@ -190,24 +196,7 @@ $(document).ready(function () {
   $("#stopBtn").click(processStop);
 
   $("button#clearBtn").click(function () {
-    // If evolution is running stop it
-    var autoGo = !!$timer;
-    if (autoGo) {
-      processStop();
-      if (window.confirm("Evolution is in progress. Do you really want to clear the field?")) {
-      }
-      else {
-        // Restart evolution if it was running
-        if (autoGo) processGo();
-        return false;
-      }
-    }
-    $figure = [];
-    $step = 0;
-    $history = null;
-    $pixelOffX = $pixelOffX % $cellSize;
-    $pixelOffY = $pixelOffY % $cellSize;
-    redrawState();
+    clearAndLoad([]);
   });
 
   function setNewScale(newCellSize) {
@@ -282,8 +271,8 @@ $(document).ready(function () {
 
   function processGo() {
     if ($figure.length > 0) {
-      $timer = window.setTimeout(processGo, 100);
       processStep();
+      $timer = window.setTimeout(processGo, 100);
     }
     else processStop();
   }
@@ -293,6 +282,26 @@ $(document).ready(function () {
       window.clearTimeout($timer);
     }
     $timer = 0;
+  }
+
+  function clearAndLoad(newFigure) {
+    // If evolution is running stop it
+    var autoGo = !!$timer;
+    if (autoGo) {
+      processStop();
+      if (window.confirm("Evolution is in progress. Do you really want to clear the field?")) {
+      }
+      else {
+        // Restart evolution if it was running
+        if (autoGo) processGo();
+        return false;
+      }
+    }
+    resetEvolutionState();
+    $pixelOffX = $pixelOffX % $cellSize;
+    $pixelOffY = $pixelOffY % $cellSize;
+    $figure = newFigure;
+    redrawState();
   }
 
 });
