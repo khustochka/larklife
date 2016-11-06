@@ -102,6 +102,27 @@ canvas {
     font-family: Lucida Sans Typewriter, Lucida Console, monaco, Bitstream Vera Sans Mono, monospace;
 }
 
+.speedControls {
+    bottom: 0;
+    left: 350px;
+    color: #777;
+}
+
+.speedControls button {
+    padding: 7px 10px;
+    margin: 0;
+    font-size: 16px;
+    background-color: white;
+    border: none;
+    border-right: 1px solid rgba(200, 200, 200, 0.5);
+}
+
+.speedControls span.showSpeed {
+    padding: 7px 10px;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+}
+
 button {
     outline: none;
 }

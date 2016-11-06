@@ -16,6 +16,9 @@ $(document).ready(function () {
       $history = null,
       borderWidth = parseInt($($canvas).css("border-width"));
 
+  var speedOptions = [0.001, 0.01, 0.05, 0.1, 0.5, 1],
+      $speedIndex = 3;
+
   var isDragging = false, isMouseDown = false, dragX, dragY;
 
   var glider = [[2, 1], [3, 2], [1, 3], [2, 3], [3, 3]];
@@ -23,6 +26,7 @@ $(document).ready(function () {
   window.addEventListener('resize', resizeCanvas, false);
 
   resizeCanvas();
+  showSpeed();
 
   function resizeCanvas() {
     $canvas.width = window.innerWidth;
@@ -293,7 +297,7 @@ $(document).ready(function () {
 
   function performGo() {
     var result = performStep();
-    if (result) $timer = window.setTimeout(performGo, 1);
+    if (result) $timer = window.setTimeout(performGo, speedOptions[$speedIndex] * 1000);
     else processStop();
   }
 
@@ -335,6 +339,20 @@ $(document).ready(function () {
     var notice = $(".notice");
     notice.html("");
     notice.hide();
+  }
+
+  $("#btnFaster").click(function () {
+    $speedIndex = Math.max($speedIndex - 1, 0);
+    showSpeed();
+  });
+
+  $("#btnSlower").click(function () {
+    $speedIndex = Math.min($speedIndex + 1, speedOptions.length - 1);
+    showSpeed();
+  });
+
+  function showSpeed() {
+    $(".showSpeed").html(speedOptions[$speedIndex] + "s");
   }
 
 });
