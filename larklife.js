@@ -23,8 +23,9 @@ $(document).ready(function () {
   var glider = [[2, 1], [3, 2], [1, 3], [2, 3], [3, 3]];
 
   window.addEventListener('resize', resizeCanvas, false);
+  window.addEventListener('orientationchange', resizeCanvas, false);
 
-  resizeCanvas();
+  setTimeout(resizeCanvas, 100); // Need some delay because the grid was not showing up.
   showSpeed();
 
   function resizeCanvas() {
@@ -39,7 +40,7 @@ $(document).ready(function () {
     var canvasWidth = $canvas.width,
         canvasHeight = $canvas.height;
 
-    var radiusDiff = doShowGrid() ? 1 : 0;
+    var radiusDiff = 1;
 
     $radius = ($cellSize - radiusDiff) / 2;
 
@@ -163,17 +164,21 @@ $(document).ready(function () {
 
 
   function drawPoint(ctx, x, y) {
-    var radiusDiff = doShowGrid() ? 1 : 0;
-    var canvasCenterX = (x * $cellSize) + $pixelOffX + $radius + radiusDiff,
-        canvasCenterY = (y * $cellSize) + $pixelOffY + $radius + radiusDiff;
+    var radiusDiff = 1;
     ctx.fillStyle = "#336633";
-    ctx.beginPath();
-    ctx.arc(canvasCenterX, canvasCenterY, $radius, 0, 2 * Math.PI);
-    ctx.fill();
-    // var topX = (x * $cellSize) + $pixelOffX + radiusDiff,
-    //     topY = (y * $cellSize) + $pixelOffY + radiusDiff;
-    // ctx.fillStyle = "#336633";
-    // ctx.fillRect(topX, topY, $cellSize, $cellSize);
+    if (doShowGrid()) {
+      var canvasCenterX = (x * $cellSize) + $pixelOffX + $radius + radiusDiff,
+          canvasCenterY = (y * $cellSize) + $pixelOffY + $radius + radiusDiff;
+      ctx.beginPath();
+      ctx.arc(canvasCenterX, canvasCenterY, $radius, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    else {
+      var topX = (x * $cellSize) + $pixelOffX + radiusDiff,
+          topY = (y * $cellSize) + $pixelOffY + radiusDiff;
+      ctx.fillStyle = "#336633";
+      ctx.fillRect(topX, topY, $cellSize, $cellSize);
+    }
   }
 
   $($canvas).on("mousedown", function (e) {
@@ -200,15 +205,9 @@ $(document).ready(function () {
     isDragging = false;
   });
 
-  $("button#plusSize").click(function () {
-    var result = $cellSize * 1.6;
-    setNewScale(result);
-  });
+  $("button#plusSize").click(zoomIn);
 
-  $("button#minusSize").click(function () {
-    var result = $cellSize / 1.6;
-    setNewScale(result);
-  });
+  $("button#minusSize").click(zoomOut);
 
   $("#stepBtn").click(processStep);
 
@@ -219,6 +218,16 @@ $(document).ready(function () {
   $("button#clearBtn").click(function () {
     clearAndLoad([]);
   });
+
+  function zoomIn() {
+    var result = $cellSize * 1.6;
+    setNewScale(result);
+  }
+
+  function zoomOut() {
+    var result = $cellSize / 1.6;
+    setNewScale(result);
+  }
 
   function setNewScale(newCellSize) {
     var newFutureCellSize = newCellSize;
@@ -318,7 +327,7 @@ $(document).ready(function () {
   }
 
   function processGo() {
-    if (!$timer){
+    if (!$timer) {
       performGo();
     }
   }
@@ -382,5 +391,35 @@ $(document).ready(function () {
   function showSpeed() {
     $(".showSpeed").html(speedOptions[$speedIndex] + "s");
   }
+
+  var scrollData = {delta: 0, timestamp: null};
+
+  function sign(x) { return x > 0 ? 1 : x < 0 ? -1 : 0; }
+
+  $(document).on("wheel", function(e) {
+    console.log(scrollData);
+    var delta = e.originalEvent.deltaY, timestamp = e.originalEvent.timeStamp;
+
+    if (delta == 0) {
+      scrollData = {delta: 0, timestamp: null};
+      return true;
+    }
+
+    if (scrollData.timestamp == null || (timestamp - scrollData.timestamp) > 1000 || sign(scrollData.delta) != sign(delta)) {
+      scrollData = {delta: delta, timestamp: timestamp};
+      return true;
+    }
+    else {
+      scrollData.delta += delta;
+    }
+
+    if ((timestamp - scrollData.timestamp) > 70 && Math.abs(scrollData.delta) > 3) {
+      if (delta > 3)
+        zoomOut();
+      else if (delta < -3)
+        zoomIn();
+      scrollData = {delta: 0, timestamp: null};
+    }
+  });
 
 });
