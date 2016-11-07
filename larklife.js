@@ -166,10 +166,14 @@ $(document).ready(function () {
     var radiusDiff = doShowGrid() ? 1 : 0;
     var canvasCenterX = (x * $cellSize) + $pixelOffX + $radius + radiusDiff,
         canvasCenterY = (y * $cellSize) + $pixelOffY + $radius + radiusDiff;
-    ctx.fillStyle = "green";
+    ctx.fillStyle = "#336633";
     ctx.beginPath();
     ctx.arc(canvasCenterX, canvasCenterY, $radius, 0, 2 * Math.PI);
     ctx.fill();
+    // var topX = (x * $cellSize) + $pixelOffX + radiusDiff,
+    //     topY = (y * $cellSize) + $pixelOffY + radiusDiff;
+    // ctx.fillStyle = "#336633";
+    // ctx.fillRect(topX, topY, $cellSize, $cellSize);
   }
 
   $($canvas).on("mousedown", function (e) {
