@@ -253,17 +253,23 @@ $(document).ready(function () {
     // If config is empty initially, just ignore.
     if ($figure.length == 0) return false;
     convertFigure();
-    $step++;
+    if (figureInHistory()) {
+      showNotice("The population has stabilized on step " + $step + ".");
+      return false;
+    }
+    else $step++;
     redrawState();
     // If it has become empty.
     if ($figure.length == 0) {
       showNotice("The population died out on step " + $step + ".");
-      return false
+      return false;
     }
     else return true;
   }
 
   function convertFigure() {
+
+    $history = $figure;
 
     var newFigure = [], neighbours = {}, x, y, pnt, xpnt;
 
@@ -292,6 +298,14 @@ $(document).ready(function () {
       neighbours[[a, b]] = neighbours[[a, b]] + 1
     }
     else neighbours[[a, b]] = 1;
+  }
+
+  function figureInHistory() {
+    if ($history == null || $figure.length != $history.length) return false;
+    for (var i = 0; i < $figure.length; i++) {
+      if (!inArray($figure[i], $history)) return false;
+    }
+    return true;
   }
 
   function processGo() {
