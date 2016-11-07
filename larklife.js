@@ -30,7 +30,6 @@ $(document).ready(function () {
   function resizeCanvas() {
     $canvas.width = window.innerWidth;
     $canvas.height = window.innerHeight;
-
     redrawState();
   }
 
@@ -40,7 +39,9 @@ $(document).ready(function () {
     var canvasWidth = $canvas.width,
         canvasHeight = $canvas.height;
 
-    $radius = ($cellSize - 1) / 2;
+    var radiusDiff = doShowGrid() ? 1 : 0;
+
+    $radius = ($cellSize - radiusDiff) / 2;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -86,11 +87,11 @@ $(document).ready(function () {
   function processCanvasClick(pixelX, pixelY) {
     // Ignore if clicked on border
     if (clickInCell(pixelX, pixelY)) {
+      // If evolution is running stop it
+      var autoGo = !!$timer;
       // Ask user if he wants to override the current evolution
-      if ($step > 0 && $figure.length > 0) {
-        // If evolution is running stop it
-        var autoGo = !!$timer;
-        if (autoGo) processStop();
+      if (autoGo) {
+        processStop();
         if (window.confirm("Evolution is in progress. Do you really want to intervene?")) {
           // Do nothing if customer agrees
         }
@@ -162,8 +163,9 @@ $(document).ready(function () {
 
 
   function drawPoint(ctx, x, y) {
-    var canvasCenterX = (x * $cellSize) + $pixelOffX + $radius + 1,
-        canvasCenterY = (y * $cellSize) + $pixelOffY + $radius + 1;
+    var radiusDiff = doShowGrid() ? 1 : 0;
+    var canvasCenterX = (x * $cellSize) + $pixelOffX + $radius + radiusDiff,
+        canvasCenterY = (y * $cellSize) + $pixelOffY + $radius + radiusDiff;
     ctx.fillStyle = "green";
     ctx.beginPath();
     ctx.arc(canvasCenterX, canvasCenterY, $radius, 0, 2 * Math.PI);
@@ -195,11 +197,12 @@ $(document).ready(function () {
   });
 
   $("button#plusSize").click(function () {
-    setNewScale(Math.round($cellSize * 1.6));
+    var result = $cellSize * 1.6;
+    setNewScale(result);
   });
 
   $("button#minusSize").click(function () {
-    var result = Math.round($cellSize / 1.6);
+    var result = $cellSize / 1.6;
     setNewScale(result);
   });
 
@@ -214,10 +217,12 @@ $(document).ready(function () {
   });
 
   function setNewScale(newCellSize) {
-    var scale = newCellSize / $cellSize;
+    var newFutureCellSize = newCellSize;
+    if (newFutureCellSize >= 1) newFutureCellSize = Math.round(newFutureCellSize);
+    var scale = newFutureCellSize / $cellSize;
     $pixelOffX = ($canvas.width / 2) * (1 - scale) + (scale * $pixelOffX);
     $pixelOffY = ($canvas.height / 2) * (1 - scale) + (scale * $pixelOffY);
-    $cellSize = newCellSize;
+    $cellSize = newFutureCellSize;
     redrawState();
   }
 
