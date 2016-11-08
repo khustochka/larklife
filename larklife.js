@@ -18,7 +18,7 @@ $(document).ready(function () {
   var speedOptions = [0.001, 0.01, 0.05, 0.1, 0.5, 1],
       $speedIndex = 3;
 
-  var isDragging = false, isMouseDown = false, dragX, dragY;
+  var isDragging = false, isMouseDown = false, dragX, dragY, touchMoveStart = null;
 
   var glider = [[2, 1], [3, 2], [1, 3], [2, 3], [3, 3]];
 
@@ -251,6 +251,26 @@ $(document).ready(function () {
       dragY = newY;
     }
   }
+
+  $($canvas).on("touchstart", function(e) {
+    //e.preventDefault();
+    touchMoveStart = [e.originalEvent.touches[0].pageX, e.originalEvent.touches[0].pageY];
+  });
+
+  $($canvas).on("touchend", function(e) {
+    //e.preventDefault();
+    touchMoveStart = null;
+  });
+
+  $(document).on("touchmove", function(e) {
+    e.preventDefault();
+    if (touchMoveStart) {
+      $pixelOffX += e.originalEvent.touches[0].pageX - touchMoveStart[0];
+      $pixelOffY += e.originalEvent.touches[0].pageY - touchMoveStart[1];
+      touchMoveStart = [e.originalEvent.touches[0].pageX, e.originalEvent.touches[0].pageY];
+      redrawState();
+    }
+  });
 
   function processClick(e) {
     var x = e.clientX, y = e.clientY,
