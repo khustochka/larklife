@@ -13,7 +13,9 @@ $(document).ready(function () {
 
   var $radius,
       $timer,
-      $history = null;
+      $history = [],
+      $oscillating = false,
+      historyDepth = 15;
 
   var speedOptions = [0.001, 0.01, 0.05, 0.1, 0.5, 1],
       $speedIndex = 3;
@@ -123,7 +125,8 @@ $(document).ready(function () {
 
   function resetEvolutionState() {
     $step = 0;
-    $history = null;
+    $history = [];
+    $oscillating = false;
     dropNotice();
   }
 
@@ -252,17 +255,17 @@ $(document).ready(function () {
     }
   }
 
-  $($canvas).on("touchstart", function(e) {
+  $($canvas).on("touchstart", function (e) {
     //e.preventDefault();
     touchMoveStart = [e.originalEvent.touches[0].pageX, e.originalEvent.touches[0].pageY];
   });
 
-  $($canvas).on("touchend", function(e) {
+  $($canvas).on("touchend", function (e) {
     //e.preventDefault();
     touchMoveStart = null;
   });
 
-  $(document).on("touchmove", function(e) {
+  $(document).on("touchmove", function (e) {
     e.preventDefault();
     if (touchMoveStart) {
       $pixelOffX += e.originalEvent.touches[0].pageX - touchMoveStart[0];
@@ -291,11 +294,18 @@ $(document).ready(function () {
     // If config is empty initially, just ignore.
     if ($figure.length == 0) return false;
     convertFigure();
-    if (figureInHistory()) {
+    var period = $oscillating ? false : figureInHistory();
+    if (period == 1) {
       showNotice("The population has stabilized on step " + $step + ".");
       return false;
     }
     else $step++;
+    if (period) {
+      showNotice("The population is oscillating with period " + period + " (step " + $step + " = step " + ($step - period) +").");
+      $oscillating = true;
+      $history = [];
+      //return false;
+    }
     redrawState();
     // If it has become empty.
     if ($figure.length == 0) {
@@ -307,7 +317,7 @@ $(document).ready(function () {
 
   function convertFigure() {
 
-    $history = $figure;
+    if (!$oscillating) pushToHistory($figure);
 
     var newFigure = [], neighbours = {}, x, y, pnt, xpnt;
 
@@ -338,12 +348,25 @@ $(document).ready(function () {
     else neighbours[[a, b]] = 1;
   }
 
+  function pushToHistory(figure) {
+    $history.push(figure);
+    $history.splice(0, $history.length - historyDepth);
+  }
+
   function figureInHistory() {
-    if ($history == null || $figure.length != $history.length) return false;
-    for (var i = 0; i < $figure.length; i++) {
-      if (!inArray($figure[i], $history)) return false;
+    var historicStep, result;
+    for (var h = $history.length - 1; h >= 0; h--) {
+      historicStep = $history[h];
+      if ($figure.length != historicStep.length) continue;
+      result = true;
+      for (var i = 0; i < $figure.length; i++) {
+        if (!inArray($figure[i], historicStep)) {result = false; break}
+      }
+      if (result) {
+        return $history.length - h;
+      }
     }
-    return true;
+    return false;
   }
 
   function processGo() {
@@ -414,9 +437,11 @@ $(document).ready(function () {
 
   var scrollData = {delta: 0, timestamp: null};
 
-  function sign(x) { return x > 0 ? 1 : x < 0 ? -1 : 0; }
+  function sign(x) {
+    return x > 0 ? 1 : x < 0 ? -1 : 0;
+  }
 
-  $(document).on("wheel", function(e) {
+  $(document).on("wheel", function (e) {
     console.log(scrollData);
     var delta = e.originalEvent.deltaY, timestamp = e.originalEvent.timeStamp;
 
