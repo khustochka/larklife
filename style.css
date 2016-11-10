@@ -60,7 +60,6 @@ canvas {
     right: 0;
     bottom: 0;
     padding: 0;
-
 }
 
 .zoomControl button {
@@ -109,13 +108,17 @@ canvas {
     color: #777;
 }
 
-.speedControls button {
+.speedControls button, .fitControl button {
     padding: 7px 10px;
     margin: 0;
     font-size: 16px;
     background-color: white;
     border: none;
+}
+
+.speedControls button {
     border-right: 1px solid rgba(200, 200, 200, 0.5);
+
 }
 
 .speedControls span.showSpeed {
@@ -123,6 +126,14 @@ canvas {
     font-size: 12px;
     font-family: Arial, sans-serif;
 }
+
+
+.fitControl {
+    right: 0;
+    top: 0;
+
+}
+
 
 button {
     outline: none;

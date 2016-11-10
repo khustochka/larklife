@@ -467,4 +467,34 @@ $(document).ready(function () {
     }
   });
 
+  $("#btnFit").click(fitToScreen);
+
+  function fitToScreen() {
+    if ($figure.length > 0) {
+
+      var minX = $figure[0][0], minY = $figure[0][1], maxX = $figure[0][0], maxY = $figure[0][1];
+
+      for(var i = 1; i < $figure.length; i++) {
+        minX = Math.min(minX, $figure[i][0]);
+        maxX = Math.max(maxX, $figure[i][0]);
+        minY = Math.min(minY, $figure[i][1]);
+        maxY = Math.max(maxY, $figure[i][1]);
+      }
+
+      var cellsNumWidth = maxX - minX + 1,
+          cellNumHeight = maxY - minY + 1,
+          pixelWidth = cellsNumWidth * $cellSize,
+          pixelHeight = cellNumHeight * $cellSize,
+          newRel = Math.min($canvas.width / pixelWidth, $canvas.height / pixelHeight);
+
+      $pixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize);
+      $pixelOffY = Math.round(($canvas.height- pixelHeight) / 2 - minY * $cellSize);
+
+      if (newRel < 1) setNewScale(Math.floor($cellSize * newRel));
+
+      redrawState();
+
+    }
+  }
+
 });
