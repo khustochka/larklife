@@ -17,8 +17,8 @@ $(document).ready(function () {
       $oscillating = false,
       historyDepth = 15;
 
-  var speedOptions = [0.001, 0.01, 0.05, 0.1, 0.5, 1],
-      $speedIndex = 3;
+  var speedOptions = [0.01, 0.05, 0.1, 0.5, 1],
+      $speedIndex = 2;
 
   var isDragging = false, isMouseDown = false, dragX, dragY, touchMoveStart = null;
 
