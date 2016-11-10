@@ -233,13 +233,17 @@ $(document).ready(function () {
   }
 
   function setNewScale(newCellSize) {
+    calcNewScale(newCellSize);
+    redrawState();
+  }
+
+  function calcNewScale(newCellSize) {
     var newFutureCellSize = newCellSize;
     if (newFutureCellSize >= 1) newFutureCellSize = Math.round(newFutureCellSize);
     var scale = newFutureCellSize / $cellSize;
     $pixelOffX = ($canvas.width / 2) * (1 - scale) + (scale * $pixelOffX);
     $pixelOffY = ($canvas.height / 2) * (1 - scale) + (scale * $pixelOffY);
     $cellSize = newFutureCellSize;
-    redrawState();
   }
 
   function dragTheGrid(e) {
@@ -301,11 +305,12 @@ $(document).ready(function () {
     }
     else $step++;
     if (period) {
-      showNotice("The population is oscillating with period " + period + " (step " + $step + " = step " + ($step - period) +").");
+      showNotice("The population is oscillating with period " + period + " (step " + $step + " = step " + ($step - period) + ").");
       $oscillating = true;
       $history = [];
       //return false;
     }
+    if ($("#autoFit").is(":checked")) fitToScreenCalculations(false);
     redrawState();
     // If it has become empty.
     if ($figure.length == 0) {
@@ -360,7 +365,10 @@ $(document).ready(function () {
       if ($figure.length != historicStep.length) continue;
       result = true;
       for (var i = 0; i < $figure.length; i++) {
-        if (!inArray($figure[i], historicStep)) {result = false; break}
+        if (!inArray($figure[i], historicStep)) {
+          result = false;
+          break
+        }
       }
       if (result) {
         return $history.length - h;
@@ -467,34 +475,47 @@ $(document).ready(function () {
     }
   });
 
-  $("#btnFit").click(fitToScreen);
+  $("#btnFit").click(function () {
+    if (fitToScreenCalculations(true)) redrawState();
+  });
 
-  function fitToScreen() {
-    if ($figure.length > 0) {
+  function fitToScreenCalculations(forceCenter) {
+    if ($figure.length == 0) return false;
 
-      var minX = $figure[0][0], minY = $figure[0][1], maxX = $figure[0][0], maxY = $figure[0][1];
+    var minX = $figure[0][0], minY = $figure[0][1], maxX = $figure[0][0], maxY = $figure[0][1];
 
-      for(var i = 1; i < $figure.length; i++) {
-        minX = Math.min(minX, $figure[i][0]);
-        maxX = Math.max(maxX, $figure[i][0]);
-        minY = Math.min(minY, $figure[i][1]);
-        maxY = Math.max(maxY, $figure[i][1]);
-      }
-
-      var cellsNumWidth = maxX - minX + 1,
-          cellNumHeight = maxY - minY + 1,
-          pixelWidth = cellsNumWidth * $cellSize,
-          pixelHeight = cellNumHeight * $cellSize,
-          newRel = Math.min($canvas.width / pixelWidth, $canvas.height / pixelHeight);
-
-      $pixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize);
-      $pixelOffY = Math.round(($canvas.height- pixelHeight) / 2 - minY * $cellSize);
-
-      if (newRel < 1) setNewScale(Math.floor($cellSize * newRel));
-
-      redrawState();
-
+    for (var i = 1; i < $figure.length; i++) {
+      minX = Math.min(minX, $figure[i][0]);
+      maxX = Math.max(maxX, $figure[i][0]);
+      minY = Math.min(minY, $figure[i][1]);
+      maxY = Math.max(maxY, $figure[i][1]);
     }
+
+    var cellsNumWidth = maxX - minX + 1,
+        cellNumHeight = maxY - minY + 1,
+        pixelWidth = cellsNumWidth * $cellSize,
+        pixelHeight = cellNumHeight * $cellSize,
+        newRel = Math.min($canvas.width / pixelWidth, $canvas.height / pixelHeight);
+
+    var autoCenter = function () {
+      $pixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize);
+      $pixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize);
+    };
+
+    // If forceCenter is true we will always center the grid,
+    // otherwise it is only centered when rescaled.
+
+    if (newRel < 1) {
+      autoCenter();
+      calcNewScale(Math.floor($cellSize * newRel));
+      return true;
+    }
+    else if (forceCenter) {
+      autoCenter();
+      return true;
+    }
+    return false;
+
   }
 
 });
