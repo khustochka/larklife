@@ -121,6 +121,21 @@ canvas {
 
 }
 
+.fitControl button {
+    border-left: 1px solid rgba(200, 200, 200, 0.5);
+}
+
+.fitControl input {
+    xdisplay: block;
+}
+
+.fitControl label {
+    padding: 0 5px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #777777;
+}
+
 .speedControls span.showSpeed {
     padding: 7px 10px;
     font-size: 12px;
