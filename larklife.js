@@ -310,7 +310,7 @@ $(document).ready(function () {
       $history = [];
       //return false;
     }
-    if ($("#autoFit").is(":checked")) fitToScreenCalculations(false);
+    if ($("#autoFit").is(":checked")) fitToScreenCalculations();
     redrawState();
     // If it has become empty.
     if ($figure.length == 0) {
@@ -476,11 +476,13 @@ $(document).ready(function () {
   });
 
   $("#btnFit").click(function () {
-    if (fitToScreenCalculations(true)) redrawState();
+    if (fitToScreenCalculations()) redrawState();
   });
 
-  function fitToScreenCalculations(forceCenter) {
+  function fitToScreenCalculations() {
     if ($figure.length == 0) return false;
+
+    var result = false;
 
     var minX = $figure[0][0], minY = $figure[0][1], maxX = $figure[0][0], maxY = $figure[0][1];
 
@@ -497,24 +499,22 @@ $(document).ready(function () {
         pixelHeight = cellNumHeight * $cellSize,
         newRel = Math.min($canvas.width / pixelWidth, $canvas.height / pixelHeight);
 
-    var autoCenter = function () {
+    var screenMinX = Math.floor(-$pixelOffX / $cellSize),
+        screenMinY = Math.floor(-$pixelOffY / $cellSize),
+        screenMaxX = Math.floor(($canvas.width - $pixelOffX) / $cellSize),
+        screenMaxY = Math.floor(($canvas.height - $pixelOffY) / $cellSize);
+
+    if (minX < screenMinX || minY < screenMinY || maxX > screenMaxX || maxY > screenMaxY) {
       $pixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize);
       $pixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize);
-    };
-
-    // If forceCenter is true we will always center the grid,
-    // otherwise it is only centered when rescaled.
+      result = true;
+    }
 
     if (newRel < 1) {
-      autoCenter();
       calcNewScale(Math.floor($cellSize * newRel));
-      return true;
+      result = true;
     }
-    else if (forceCenter) {
-      autoCenter();
-      return true;
-    }
-    return false;
+    return result;
 
   }
 
