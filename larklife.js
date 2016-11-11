@@ -505,8 +505,20 @@ $(document).ready(function () {
         screenMaxY = Math.floor(($canvas.height - $pixelOffY) / $cellSize);
 
     if (minX < screenMinX || minY < screenMinY || maxX > screenMaxX || maxY > screenMaxY) {
-      $pixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize);
-      $pixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize);
+      var oldPixelX = $pixelOffX,
+          oldPixelY = $pixelOffY,
+          newPixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize),
+          newPixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize),
+          diffX = (newPixelOffX - $pixelOffX) / 30,
+          diffY = (newPixelOffY - $pixelOffY) / 30;
+      var j = 1;
+      var smoothCenter = function () {
+        $pixelOffX = oldPixelX + Math.floor(diffX * j);
+        $pixelOffY = oldPixelY + Math.floor(diffY * j);
+        j++;
+        if (j < 30) setTimeout(smoothCenter, 1000 / 120);
+      };
+      smoothCenter();
       result = true;
     }
 
