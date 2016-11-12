@@ -157,3 +157,8 @@ button {
 button:hover {
     cursor: pointer;
 }
+
+.printCtrl {
+    top: 0;
+    left: 0;
+}

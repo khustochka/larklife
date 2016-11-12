@@ -22,12 +22,10 @@ $(document).ready(function () {
 
   var isDragging = false, isMouseDown = false, dragX, dragY, touchMoveStart = null;
 
-  var glider = [[2, 1], [3, 2], [1, 3], [2, 3], [3, 3]];
-
   window.addEventListener('resize', resizeCanvas, false);
   window.addEventListener('orientationchange', resizeCanvas, false);
 
-  setTimeout(resizeCanvas, 100); // Need some delay because the grid was not showing up.
+  setTimeout(initialLoad, 100); // Need some delay because the grid was not showing up.
   showSpeed();
 
   function resizeCanvas() {
@@ -479,7 +477,7 @@ $(document).ready(function () {
     if (fitToScreenCalculations()) redrawState();
   });
 
-  function fitToScreenCalculations() {
+  function fitToScreenCalculations(forceAutoCenter) {
     if ($figure.length == 0) return false;
 
     var result = false;
@@ -504,21 +502,24 @@ $(document).ready(function () {
         screenMaxX = Math.floor(($canvas.width - $pixelOffX) / $cellSize),
         screenMaxY = Math.floor(($canvas.height - $pixelOffY) / $cellSize);
 
-    if (minX < screenMinX || minY < screenMinY || maxX > screenMaxX || maxY > screenMaxY) {
+    if (forceAutoCenter || minX < screenMinX || minY < screenMinY || maxX > screenMaxX || maxY > screenMaxY) {
       var oldPixelX = $pixelOffX,
           oldPixelY = $pixelOffY,
           newPixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize),
           newPixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize),
           diffX = (newPixelOffX - $pixelOffX) / 30,
           diffY = (newPixelOffY - $pixelOffY) / 30;
-      var j = 1;
-      var smoothCenter = function () {
-        $pixelOffX = oldPixelX + Math.floor(diffX * j);
-        $pixelOffY = oldPixelY + Math.floor(diffY * j);
-        j++;
-        if (j < 30) setTimeout(smoothCenter, 1000 / 120);
-      };
-      smoothCenter();
+      // var j = 1;
+      // var smoothCenter = function () {
+      //   $pixelOffX = oldPixelX + Math.floor(diffX * j);
+      //   $pixelOffY = oldPixelY + Math.floor(diffY * j);
+      //   j++;
+      //   if (j < 30) setTimeout(smoothCenter, 1000 / 120);
+      // };
+      // smoothCenter();
+      // FIXME: rethink smooth center
+      $pixelOffX = newPixelOffX;
+      $pixelOffY = newPixelOffY;
       result = true;
     }
 
@@ -530,4 +531,30 @@ $(document).ready(function () {
 
   }
 
+  var PATTERNS = {
+    glider: [[2, 1], [3, 2], [1, 3], [2, 3], [3, 3]],
+    glidergun: [[5,6],[6,6],[6,7],[5,7],[15,6],[15,7],[15,8],[16,5],[17,4],[18,4],[16,9],[17,10],[18,10],[19,7],[21,6],[21,7],[21,8],[20,5],[20,9],[22,7],[25,6],[26,6],[25,5],[26,5],[25,4],[26,4],[27,3],[27,7],[29,7],[29,8],[29,3],[29,2],[39,4],[40,4],[40,5],[39,5]]
+  };
+
+  function loadPattern(name) {
+    if (PATTERNS[name]) {
+      resetEvolutionState();
+      $figure = PATTERNS[name];
+      fitToScreenCalculations(true);
+      redrawState();
+    }
+  }
+
+  function initialLoad() {
+    resizeCanvas();
+    if (window.location.hash) {
+      var hash = window.location.hash.substring(2); //Puts hash in variable, and removes the # character
+      if (hash)
+        loadPattern(hash);
+    }
+  }
+
+  $("#btnPrint").click(function() {
+    console.log(JSON.stringify($figure));
+  });
 });
