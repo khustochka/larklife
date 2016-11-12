@@ -448,7 +448,6 @@ $(document).ready(function () {
   }
 
   $(document).on("wheel", function (e) {
-    console.log(scrollData);
     var delta = e.originalEvent.deltaY, timestamp = e.originalEvent.timeStamp;
 
     if (delta == 0) {
@@ -524,7 +523,7 @@ $(document).ready(function () {
     }
 
     if (newRel < 1) {
-      calcNewScale(Math.floor($cellSize * newRel));
+      calcNewScale($cellSize * newRel);
       result = true;
     }
     return result;
