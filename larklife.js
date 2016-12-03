@@ -476,7 +476,11 @@ $(document).ready(function () {
     if (fitToScreenCalculations()) redrawState();
   });
 
-  function fitToScreenCalculations(forceAutoCenter) {
+  function fitToScreenCalculations(forceAutoCenter, move) {
+    // move is true by default
+    move = typeof move !== 'undefined' ? move : true;
+
+
     if ($figure.length == 0) return false;
 
     var result = false;
@@ -509,18 +513,23 @@ $(document).ready(function () {
           newPixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize),
           diffX = (newPixelOffX - $pixelOffX) / units,
           diffY = (newPixelOffY - $pixelOffY) / units;
-      var j = 1;
-      var smoothCenter = function () {
-        $pixelOffX = oldPixelX + Math.floor(diffX * j);
-        $pixelOffY = oldPixelY + Math.floor(diffY * j);
-        redrawState();
-        j++;
-        if (j < units) setTimeout(smoothCenter, 1000 / 60);
-        else {
-          if (newRel < 1) setTimeout(function() { calcNewScale($cellSize * newRel); redrawState(); }, 100)
-        }
-      };
-      smoothCenter();
+      if (move) {
+        var j = 1;
+        var smoothCenter = function () {
+          $pixelOffX = oldPixelX + Math.floor(diffX * j);
+          $pixelOffY = oldPixelY + Math.floor(diffY * j);
+          redrawState();
+          j++;
+          if (j < units) setTimeout(smoothCenter, 1000 / 60);
+          else {
+            if (newRel < 1) setTimeout(function () {
+              calcNewScale($cellSize * newRel);
+              redrawState();
+            }, 100)
+          }
+        };
+        smoothCenter();
+      }
       $pixelOffX = newPixelOffX;
       $pixelOffY = newPixelOffY;
       result = true;
@@ -544,7 +553,7 @@ $(document).ready(function () {
     if (PATTERNS[name]) {
       resetEvolutionState();
       $figure = PATTERNS[name];
-      fitToScreenCalculations(true);
+      fitToScreenCalculations(true, false);
       redrawState();
     }
   }
@@ -552,7 +561,7 @@ $(document).ready(function () {
   function initialLoad() {
     resizeCanvas();
     if (window.location.hash) {
-      var hash = window.location.hash.substring(2); //Puts hash in variable, and removes the # character
+      var hash = window.location.hash.substring(2); //Puts hash in variable, and removes the #! character
       if (hash)
         loadPattern(hash);
     }
