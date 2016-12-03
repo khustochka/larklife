@@ -498,34 +498,38 @@ $(document).ready(function () {
 
     var screenMinX = Math.floor(-$pixelOffX / $cellSize),
         screenMinY = Math.floor(-$pixelOffY / $cellSize),
-        screenMaxX = Math.floor(($canvas.width - $pixelOffX) / $cellSize),
-        screenMaxY = Math.floor(($canvas.height - $pixelOffY) / $cellSize);
+        screenMaxX = Math.ceil(($canvas.width - $pixelOffX) / $cellSize),
+        screenMaxY = Math.ceil(($canvas.height - $pixelOffY) / $cellSize);
 
     if (forceAutoCenter || minX < screenMinX || minY < screenMinY || maxX > screenMaxX || maxY > screenMaxY) {
+      var units = 10;
       var oldPixelX = $pixelOffX,
           oldPixelY = $pixelOffY,
           newPixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize),
           newPixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize),
-          diffX = (newPixelOffX - $pixelOffX) / 30,
-          diffY = (newPixelOffY - $pixelOffY) / 30;
-      // var j = 1;
-      // var smoothCenter = function () {
-      //   $pixelOffX = oldPixelX + Math.floor(diffX * j);
-      //   $pixelOffY = oldPixelY + Math.floor(diffY * j);
-      //   j++;
-      //   if (j < 30) setTimeout(smoothCenter, 1000 / 120);
-      // };
-      // smoothCenter();
-      // FIXME: rethink smooth center
+          diffX = (newPixelOffX - $pixelOffX) / units,
+          diffY = (newPixelOffY - $pixelOffY) / units;
+      var j = 1;
+      var smoothCenter = function () {
+        $pixelOffX = oldPixelX + Math.floor(diffX * j);
+        $pixelOffY = oldPixelY + Math.floor(diffY * j);
+        redrawState();
+        j++;
+        if (j < units) setTimeout(smoothCenter, 1000 / 60);
+        else {
+          if (newRel < 1) setTimeout(function() { calcNewScale($cellSize * newRel); redrawState(); }, 100)
+        }
+      };
+      smoothCenter();
       $pixelOffX = newPixelOffX;
       $pixelOffY = newPixelOffY;
       result = true;
     }
 
     if (newRel < 1) {
-      calcNewScale($cellSize * newRel);
       result = true;
     }
+
     return result;
 
   }
