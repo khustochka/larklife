@@ -144,8 +144,8 @@ canvas {
 
 
 .fitControl {
-    right: 0;
-    top: 0;
+    right: 60px;
+    bottom: 0;
 
 }
 
@@ -161,4 +161,16 @@ button:hover {
 .printCtrl {
     top: 0;
     left: 0;
+}
+
+.copyright {
+    display: inline-block;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 2px 5px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #666666;
+    text-shadow: 0px 0px 3px rgba(100, 100, 100, 0.5);
 }
