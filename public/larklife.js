@@ -15,7 +15,8 @@ $(document).ready(function () {
       $timer,
       $history = [],
       $oscillating = false,
-      historyDepth = 100;
+      maxHistoryDepth = 100,
+      minHistoryDepth = 15;
 
   var speedOptions = [0.01, 0.05, 0.1, 0.5, 1],
       $speedIndex = 2;
@@ -308,12 +309,12 @@ $(document).ready(function () {
     convertFigure();
     var period = $oscillating ? false : figureInHistory();
     if (period == 1) {
-      showNotice("The population has stabilized on step " + $step + ".");
+      showNotice("Population has stabilized on step " + $step + ".");
       return false;
     }
     else $step++;
     if (period) {
-      showNotice("The population is oscillating with period " + period + " (step " + $step + " = step " + ($step - period) + ").");
+      showNotice("Population is oscillating with period " + period + " (step " + $step + " = step " + ($step - period) + ").");
       $oscillating = true;
       $history = [];
       //return false;
@@ -322,7 +323,7 @@ $(document).ready(function () {
     redrawState();
     // If it has become empty.
     if ($figure.length == 0) {
-      showNotice("The population died out on step " + $step + ".");
+      showNotice("Population died out on step " + $step + ".");
       return false;
     }
     else return true;
@@ -361,9 +362,13 @@ $(document).ready(function () {
     else neighbours[[a, b]] = 1;
   }
 
+  function historyDepth() {
+    return $figure.length > 2000 ? minHistoryDepth : maxHistoryDepth;
+  }
+
   function pushToHistory(figure) {
     $history.push(figure);
-    $history.splice(0, $history.length - historyDepth);
+    $history.splice(0, $history.length - historyDepth());
   }
 
   function figureInHistory() {
