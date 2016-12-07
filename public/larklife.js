@@ -15,7 +15,7 @@ $(document).ready(function () {
       $timer,
       $history = [],
       $oscillating = false,
-      historyDepth = 15;
+      historyDepth = 100;
 
   var speedOptions = [0.01, 0.05, 0.1, 0.5, 1],
       $speedIndex = 2;
@@ -288,7 +288,6 @@ $(document).ready(function () {
   });
 
   function processClick(e) {
-    $(".patterns").hide();
     var x = e.clientX, y = e.clientY,
         pixelX = x - $canvas.offsetLeft - 1,
         pixelY = y - $canvas.offsetTop - 1;
@@ -299,7 +298,6 @@ $(document).ready(function () {
   }
 
   function processStep() {
-    $(".patterns").hide();
     if (!$timer) performStep();
   }
 
@@ -388,7 +386,6 @@ $(document).ready(function () {
   }
 
   function processGo() {
-    $(".patterns").hide();
     if (!$timer) {
       performGo();
     }
@@ -593,8 +590,8 @@ $(document).ready(function () {
 
   }
 
-  $(".dropDown").click(function() {
-    $(".patterns").toggle();
-  });
+  // $(".dropDown").click(function() {
+  //   $(".patterns").toggle();
+  // });
 
 });

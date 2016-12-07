@@ -194,6 +194,10 @@ ul.patterns {
     display: none;
 }
 
+.patternSelection:hover ul.patterns {
+    display: block;
+}
+
 ul.patterns li {
     font-weight: normal;
     color: #777777;
