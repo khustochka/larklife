@@ -212,4 +212,5 @@ ul.patterns li {
 
 .dropDown {
     cursor: pointer;
+    width: 100%;
 }
