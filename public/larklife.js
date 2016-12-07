@@ -285,6 +285,7 @@ $(document).ready(function () {
   });
 
   function processClick(e) {
+    $(".patterns").hide();
     var x = e.clientX, y = e.clientY,
         pixelX = x - $canvas.offsetLeft - 1,
         pixelY = y - $canvas.offsetTop - 1;
@@ -295,6 +296,7 @@ $(document).ready(function () {
   }
 
   function processStep() {
+    $(".patterns").hide();
     if (!$timer) performStep();
   }
 
@@ -383,6 +385,7 @@ $(document).ready(function () {
   }
 
   function processGo() {
+    $(".patterns").hide();
     if (!$timer) {
       performGo();
     }
@@ -586,5 +589,9 @@ $(document).ready(function () {
     });
 
   }
+
+  $(".dropDown").click(function() {
+    $(".patterns").toggle();
+  });
 
 });

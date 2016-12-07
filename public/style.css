@@ -191,6 +191,7 @@ ul.patterns {
     border-top: 1px solid  rgba(200, 200, 200, 0.5);
     padding: 5px 0 0 0;
     margin: 7px 0 0 0;
+    display: none;
 }
 
 ul.patterns li {
@@ -201,4 +202,14 @@ ul.patterns li {
     font-size: 16px;
     cursor: pointer;
     text-decoration: underline;
+}
+
+.drop {
+    color: #555555;
+    font-size: 18px;
+    float: right;
+}
+
+.dropDown {
+    cursor: pointer;
 }
