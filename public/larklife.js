@@ -249,7 +249,7 @@ $(document).ready(function () {
 
   function calcNewScale(newCellSize) {
     var newFutureCellSize = newCellSize;
-    if (newFutureCellSize >= 1) newFutureCellSize = Math.round(newFutureCellSize);
+    if (newFutureCellSize >= 5) newFutureCellSize = Math.round(newFutureCellSize);
     var scale = newFutureCellSize / $cellSize;
     $pixelOffX = ($canvas.width / 2) * (1 - scale) + (scale * $pixelOffX);
     $pixelOffY = ($canvas.height / 2) * (1 - scale) + (scale * $pixelOffY);
