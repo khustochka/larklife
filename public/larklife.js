@@ -100,19 +100,12 @@ $(document).ready(function () {
   function processCanvasClick(pixelX, pixelY) {
     // Ignore if clicked on border
     if (clickInCell(pixelX, pixelY)) {
-      // If evolution is running stop it
-      var autoGo = !!$timer;
       // Ask user if he wants to override the current evolution
-      if (autoGo) {
-        processStop();
-        if (window.confirm("Evolution is in progress. Do you really want to intervene?")) {
-          // Do nothing if customer agrees
-        }
-        else {
-          // Restart evolution if it was running
-          if (autoGo) performGo();
-          return false; // Exit
-        }
+      if (wantsToStopEvolution("Evolution is in progress. Do you really want to intervene?")) {
+        // Do nothing if customer agrees
+      }
+      else {
+        return false; // Exit
       }
       toggleCell(pixelX, pixelY)
     }
@@ -411,17 +404,11 @@ $(document).ready(function () {
   }
 
   function clearAndLoad(newFigure) {
-    // If evolution is running stop it
-    var autoGo = !!$timer;
-    if (autoGo) {
-      processStop();
-      if (window.confirm("Evolution is in progress. Do you really want to clear the field?")) {
-      }
-      else {
-        // Restart evolution if it was running
-        if (autoGo) performGo();
-        return false;
-      }
+    if (wantsToStopEvolution("Evolution is in progress. Do you really want to clear the field?")) {
+      // proceed
+    }
+    else {
+      return false;
     }
     resetEvolutionState();
     $pixelOffX = $pixelOffX % $cellSize;
@@ -560,6 +547,12 @@ $(document).ready(function () {
   }
 
   function loadPattern(name) {
+    if (wantsToStopEvolution("Evolution is in progress. Do you really want to load a new pattern?")) {
+      // proceed
+    }
+    else {
+      return false;
+    }
     if (PATTERNS[name]) {
       resetEvolutionState();
       $figure = PATTERNS[name].pattern;
@@ -599,5 +592,24 @@ $(document).ready(function () {
   // $(".dropDown").click(function() {
   //   $(".patterns").toggle();
   // });
+
+  function wantsToStopEvolution(question) {
+    // If evolution is running stop it
+    var autoGo = !!$timer;
+    // Ask user if he wants to override the current evolution
+    if (autoGo) {
+      processStop();
+      if (window.confirm(question)) {
+        return true;
+      }
+      else {
+        // Restart evolution if it was running
+        if (autoGo) performGo();
+        return false;
+      }
+    }
+    // If evolution is not running just ignore
+    return true;
+  }
 
 });
