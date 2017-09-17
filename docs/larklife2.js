@@ -9,11 +9,18 @@ $(document).ready(function () {
       $pixelOffY,
       $cellSize,
       $showGrid,
-      $autoevolve;
+      $autoevolve,
+      $period,
+      $firstPeriodStep,
+      $history;
 
   var $actionsList = [];
 
   var isDragging = false, isMouseDown = false, dragX, dragY, touchMoveStart = null;
+
+  var
+      maxHistoryDepth = 100,
+      minHistoryDepth = 15;
 
   var PATTERNS = {
     glider: {name: "Glider", pattern: [[2, 1], [3, 2], [1, 3], [2, 3], [3, 3]]},
@@ -62,7 +69,10 @@ $(document).ready(function () {
     $pixelOffY = newst.pixelOffY;
     $cellSize = newst.cellSize;
     $showGrid = newst.showGrid;
-    $autoevolve = newst.autoevolve
+    $autoevolve = newst.autoevolve;
+    $period = newst.period;
+    $firstPeriodStep = newst.firstPeriodStep;
+    $history = newst.history;
   }
 
   function wantsToStopEvolution(message) {
@@ -80,7 +90,10 @@ $(document).ready(function () {
               pixelOffY: -1,
               cellSize: 18,
               showGrid: true,
-              autoevolve: false
+              autoevolve: false,
+              period: 0,
+              firstPeriodStep: null,
+              history: [PATTERNS[name].pattern]
             }
         );
         autoCenter();
@@ -103,7 +116,10 @@ $(document).ready(function () {
           pixelOffY: -1,
           cellSize: 18,
           showGrid: true,
-          autoevolve: false
+          autoevolve: false,
+          period: 0,
+          firstPeriodStep: null,
+          history: []
         }
     )
   }
@@ -233,10 +249,12 @@ $(document).ready(function () {
           loadPattern(action[1]);
           break;
         case "step":
-          processStep();
+          if (!$autoevolve)
+            processStep();
           break;
         case "startEvolution":
-          startEvolution();
+          if (!$autoevolve)
+            startEvolution();
           break;
         case "stopEvolution":
           stopEvolution();
@@ -314,7 +332,10 @@ $(document).ready(function () {
           pixelOffY: newPixelOffY,
           cellSize: newFutureCellSize,
           showGrid: $showGrid,
-          autoevolve: $autoevolve
+          autoevolve: $autoevolve,
+          period: $period,
+          firstPeriodStep: $firstPeriodStep,
+          history: $history
         }
     );
   }
@@ -332,7 +353,10 @@ $(document).ready(function () {
           pixelOffY: newPixelOffY,
           cellSize: $cellSize,
           showGrid: $showGrid,
-          autoevolve: $autoevolve
+          autoevolve: $autoevolve,
+          period: $period,
+          firstPeriodStep: $firstPeriodStep,
+          history: $history
         }
     );
   }
@@ -416,53 +440,109 @@ $(document).ready(function () {
     // Show step and size
     $(".stepNum").html($step);
     $(".sizeNum").html($figure.length);
+
+    if ($period === 1) {
+      if ($step === 0)
+        showNotice("Population is stable.");
+      else
+        showNotice("Population has stabilized on step " + $step + ".");
+    }
+    else if ($period > 1) {
+      showNotice("Population is oscillating with period " + $period + " (step " + $firstPeriodStep + " = step " + ($firstPeriodStep - $period) + ").");
+    }
+    else {
+      dropNotice();
+    }
+
   };
+
+  function showNotice(text) {
+    var notice = $(".notice");
+    notice.html(text);
+    notice.show();
+    notice.css("left", ($canvas.width - notice.width()) / 2 + "px");
+  }
+
+  function dropNotice() {
+    var notice = $(".notice");
+    notice.html("");
+    notice.hide();
+  }
 
   function processStep() {
     // If config is empty initially, just ignore.
     if ($figure.length === 0) return false;
+    if ($period === 1) return false;
+    var newFigure = evolve($figure),
+        newStep = $step, newPeriod = $period, newHistory = $history,
+        newAutoEvolve = $autoevolve, newFirstPeriodStep = $firstPeriodStep,
+        historyDepth = $figure.length > 2000 ? minHistoryDepth : maxHistoryDepth;
+    // Check if it has period
+    if (newPeriod === 0) {
+      newPeriod = figureInHistory(newFigure);
+    }
+
+    if (newPeriod !== 1)
+      newStep++;
+
+    if (newPeriod === 0) {
+      newHistory.push(newFigure);
+      newHistory.splice(0, newHistory.length - historyDepth);
+    }
+    else {
+      newHistory = [];
+      if (!newFirstPeriodStep)
+        newFirstPeriodStep = newStep;
+    }
+    if (newPeriod === 1) newAutoEvolve = false;
     setState({
-      figure: evolve($figure),
-      step: $step + 1,
+      figure: newFigure,
+      step: newStep,
       pixelOffX: $pixelOffX,
       pixelOffY: $pixelOffY,
       cellSize: $cellSize,
       showGrid: $showGrid,
-      autoevolve: $autoevolve
+      autoevolve: newAutoEvolve,
+      period: newPeriod,
+      firstPeriodStep: newFirstPeriodStep,
+      history: newHistory
     });
-    // var period = $oscillating ? false : figureInHistory();
-    // if (period == 1) {
-    //   showNotice("Population has stabilized on step " + $step + ".");
-    //   return false;
-    // }
-    // else $step++;
-    // if (period) {
-    //   showNotice("Population is oscillating with period " + period + " (step " + $step + " = step " + ($step - period) + ").");
-    //   $oscillating = true;
-    //   $history = [];
-    //   //return false;
-    // }
-    // if ($("#autoFit").is(":checked")) fitToScreenCalculations();
-    // redrawState();
-    // // If it has become empty.
-    // if ($figure.length == 0) {
-    //   showNotice("Population died out on step " + $step + ".");
-    //   return false;
-    // }
-    // else return true;
+  }
+
+  function figureInHistory(figure) {
+    var historicStep, result;
+    for (var h = $history.length - 1; h >= 0; h--) {
+      historicStep = $history[h];
+      if (figure.length !== historicStep.length) continue;
+      result = true;
+      for (var i = 0; i < figure.length; i++) {
+        if (!inArray(figure[i], historicStep)) {
+          result = false;
+          break
+        }
+      }
+      if (result) {
+        return $history.length - h;
+      }
+    }
+    return 0;
   }
 
   function startEvolution() {
     // If config is empty initially, just ignore.
     if ($figure.length === 0) return false;
     setState({
-      figure: evolve($figure),
-      step: $step + 1,
+      figure: $figure,
+      step: $step,
       pixelOffX: $pixelOffX,
       pixelOffY: $pixelOffY,
       cellSize: $cellSize,
       showGrid: $showGrid,
-      autoevolve: true
+      // Do not autoevolve if population is stable
+      autoevolve: $period !== 1,
+      period: $period,
+      firstPeriodStep: $firstPeriodStep,
+      history: $history
     });
   }
 
@@ -474,7 +554,10 @@ $(document).ready(function () {
       pixelOffY: $pixelOffY,
       cellSize: $cellSize,
       showGrid: $showGrid,
-      autoevolve: false
+      autoevolve: false,
+      period: $period,
+      firstPeriodStep: $firstPeriodStep,
+      history: $history
     });
   }
 
@@ -547,7 +630,10 @@ $(document).ready(function () {
         pixelOffY: $pixelOffY,
         cellSize: $cellSize,
         showGrid: $showGrid,
-        autoevolve: false
+        autoevolve: false,
+        period: 0,
+        firstPeriodStep: null,
+        history: [newFigure]
       });
     }
   }
