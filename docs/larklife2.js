@@ -65,25 +65,31 @@ $(document).ready(function () {
     $autoevolve = newst.autoevolve
   }
 
+  function wantsToStopEvolution(message) {
+    return !$autoevolve || $autoevolve && window.confirm(message)
+  }
+
   function loadPattern(name) {
     if (PATTERNS[name]) {
-      setState(
-          {
-            figure: PATTERNS[name].pattern,
-            step: 0,
-            pixelOffX: -1,
-            pixelOffY: -1,
-            cellSize: 18,
-            showGrid: true,
-            autoevolve: false
-          }
-      );
-      autoCenter();
+      if (wantsToStopEvolution("Evolution is in progress. Do you want to stop it?")) {
+        setState(
+            {
+              figure: PATTERNS[name].pattern,
+              step: 0,
+              pixelOffX: -1,
+              pixelOffY: -1,
+              cellSize: 18,
+              showGrid: true,
+              autoevolve: false
+            }
+        );
+        autoCenter();
+      }
     }
   }
 
   function processClear() {
-    if ($autoevolve && window.confirm("Evolution is in progress. Do you want to clear the field?")) {
+    if (wantsToStopEvolution("Evolution is in progress. Do you want to clear the field?")) {
       resetState();
     }
   }
@@ -146,6 +152,14 @@ $(document).ready(function () {
     $actionsList.push(["autoFit"])
   });
 
+  $("button#plusSize").click(function () {
+    $actionsList.push(["zoomIn"])
+  });
+
+  $("button#minusSize").click(function () {
+    $actionsList.push(["zoomOut"])
+  });
+
   function processClick(e) {
     var x = e.clientX, y = e.clientY,
         pixelX = x - $canvas.offsetLeft - 1,
@@ -196,6 +210,12 @@ $(document).ready(function () {
         case "changeOffset":
           changeOffset(action[1], action[2]);
           break;
+        case "zoomIn":
+          zoomCell($cellSize * 1.6);
+          break;
+        case "zoomOut":
+          zoomCell($cellSize / 1.6);
+          break;
         case "autoFit":
           autoCenter();
           break;
@@ -231,6 +251,25 @@ $(document).ready(function () {
         newPixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize);
 
     changeOffset(newPixelOffX, newPixelOffY);
+  }
+
+  function zoomCell(newCellSize) {
+    var newFutureCellSize = newCellSize;
+    if (newFutureCellSize >= 5) newFutureCellSize = Math.round(newFutureCellSize);
+    var scale = newFutureCellSize / $cellSize,
+        newPixelOffX = ($canvas.width / 2) * (1 - scale) + (scale * $pixelOffX),
+        newPixelOffY = ($canvas.height / 2) * (1 - scale) + (scale * $pixelOffY);
+    setState(
+        {
+          figure: $figure,
+          step: $step,
+          pixelOffX: newPixelOffX,
+          pixelOffY: newPixelOffY,
+          cellSize: newFutureCellSize,
+          showGrid: $showGrid,
+          autoevolve: $autoevolve
+        }
+    );
   }
 
   function doShowGrid() {
@@ -445,7 +484,7 @@ $(document).ready(function () {
   }
 
   function toggleCell(x, y) {
-    if ($autoevolve && window.confirm("Evolution is in progress. Do you want to stop it?")) {
+    if (wantsToStopEvolution("Evolution is in progress. Do you want to stop it?")) {
       var newFigure = $figure;
       var newPoint = [x, y];
       var idx = indexOf(newPoint, newFigure);
