@@ -12,7 +12,9 @@ $(document).ready(function () {
       $autoevolve,
       $period,
       $firstPeriodStep,
-      $history;
+      $history,
+      $speed, // Generations per second
+      $lastEvoTime;
 
   var $actionsList = [];
 
@@ -20,7 +22,8 @@ $(document).ready(function () {
 
   var
       maxHistoryDepth = 100,
-      minHistoryDepth = 15;
+      minHistoryDepth = 15,
+      initialSpeed = 20;
 
   var PATTERNS = {
     glider: {name: "Glider", pattern: [[2, 1], [3, 2], [1, 3], [2, 3], [3, 3]]},
@@ -73,6 +76,8 @@ $(document).ready(function () {
     $period = newst.period;
     $firstPeriodStep = newst.firstPeriodStep;
     $history = newst.history;
+    $speed = newst.speed;
+    $lastEvoTime = newst.lastEvoTime;
   }
 
   function wantsToStopEvolution(message) {
@@ -93,7 +98,9 @@ $(document).ready(function () {
               autoevolve: false,
               period: 0,
               firstPeriodStep: null,
-              history: [PATTERNS[name].pattern]
+              history: [PATTERNS[name].pattern],
+              speed: $speed,
+              lastEvoTime: null
             }
         );
         autoCenter();
@@ -119,7 +126,9 @@ $(document).ready(function () {
           autoevolve: false,
           period: 0,
           firstPeriodStep: null,
-          history: []
+          history: [],
+          speed: initialSpeed,
+          lastEvoTime: null
         }
     )
   }
@@ -281,7 +290,18 @@ $(document).ready(function () {
           ;
       }
     }
-    if ($autoevolve) processStep();
+    if ($autoevolve) {
+      var stepsToGo = 0;
+      if (!$lastEvoTime){
+        stepsToGo = 1;
+      }
+      else {
+        stepsToGo = Math.floor($speed * (Date.now() - $lastEvoTime) / 1000);
+      }
+      for(var j = 0; i < stepsToGo; i++)   {
+        processStep();
+      }
+    }
   }
 
   function autoCenter() {
@@ -335,7 +355,9 @@ $(document).ready(function () {
           autoevolve: $autoevolve,
           period: $period,
           firstPeriodStep: $firstPeriodStep,
-          history: $history
+          history: $history,
+          speed: $speed,
+          lastEvoTime: $lastEvoTime
         }
     );
   }
@@ -356,7 +378,9 @@ $(document).ready(function () {
           autoevolve: $autoevolve,
           period: $period,
           firstPeriodStep: $firstPeriodStep,
-          history: $history
+          history: $history,
+          speed: $speed,
+          lastEvoTime: $lastEvoTime
         }
     );
   }
@@ -505,7 +529,9 @@ $(document).ready(function () {
       autoevolve: newAutoEvolve,
       period: newPeriod,
       firstPeriodStep: newFirstPeriodStep,
-      history: newHistory
+      history: newHistory,
+      speed: $speed,
+      lastEvoTime: newAutoEvolve ? Date.now() : null
     });
   }
 
@@ -542,7 +568,9 @@ $(document).ready(function () {
       autoevolve: $period !== 1,
       period: $period,
       firstPeriodStep: $firstPeriodStep,
-      history: $history
+      history: $history,
+      speed: $speed,
+      lastEvoTime: null
     });
   }
 
@@ -557,7 +585,9 @@ $(document).ready(function () {
       autoevolve: false,
       period: $period,
       firstPeriodStep: $firstPeriodStep,
-      history: $history
+      history: $history,
+      speed: $speed,
+      lastEvoTime: null
     });
   }
 
@@ -633,19 +663,17 @@ $(document).ready(function () {
         autoevolve: false,
         period: 0,
         firstPeriodStep: null,
-        history: [newFigure]
+        history: [newFigure],
+        speed: $speed,
+        lastEvoTime: null
       });
     }
   }
 
   function mainLoop() {
-    var now = Date.now();
-    var delta = now - then;
 
     update();
     render();
-
-    then = now;
 
     // Request to do this again ASAP
     requestAnimationFrame(mainLoop);
