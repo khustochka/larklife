@@ -91,8 +91,8 @@ $(document).ready(function () {
             {
               figure: PATTERNS[name].pattern,
               step: 0,
-              pixelOffX: -1,
-              pixelOffY: -1,
+              pixelOffX: $pixelOffX ? $pixelOffX : -1,
+              pixelOffY: $pixelOffY ? $pixelOffY : -1,
               cellSize: 18,
               showGrid: true,
               autoevolve: false,
@@ -119,8 +119,8 @@ $(document).ready(function () {
         {
           figure: [],
           step: 0,
-          pixelOffX: -1,
-          pixelOffY: -1,
+          pixelOffX: $pixelOffX ? $pixelOffX : -1,
+          pixelOffY: $pixelOffY ? $pixelOffY : -1,
           cellSize: 18,
           showGrid: true,
           autoevolve: false,
