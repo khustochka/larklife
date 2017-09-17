@@ -132,6 +132,37 @@ $(document).ready(function () {
     isDragging = false;
   });
 
+  var scrollData = {delta: 0, timestamp: null};
+
+  function sign(x) {
+    return x > 0 ? 1 : x < 0 ? -1 : 0;
+  }
+
+  $(document).on("wheel", function (e) {
+    var delta = e.originalEvent.deltaY, timestamp = e.originalEvent.timeStamp;
+
+    if (delta === 0) {
+      scrollData = {delta: 0, timestamp: null};
+      return true;
+    }
+
+    if (scrollData.timestamp === null || (timestamp - scrollData.timestamp) > 1000 || sign(scrollData.delta) !== sign(delta)) {
+      scrollData = {delta: delta, timestamp: timestamp};
+      return true;
+    }
+    else {
+      scrollData.delta += delta;
+    }
+
+    if ((timestamp - scrollData.timestamp) > 70 && Math.abs(scrollData.delta) > 3) {
+      if (delta > 3)
+        $actionsList.push(["zoomOut"]);
+      else if (delta < -3)
+        $actionsList.push(["zoomIn"]);
+      scrollData = {delta: 0, timestamp: null};
+    }
+  });
+
   $("#stepBtn").click(function () {
     $actionsList.push(["step"])
   });
