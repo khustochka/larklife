@@ -197,12 +197,18 @@ $(document).ready(function () {
         pixelY = y - $canvas.offsetTop - 1;
     if (pixelX >= 0 && pixelX <= $canvas.width &&
         pixelY >= 0 && pixelY <= $canvas.height) {
-
-      var cellCoords = pixelToCellCoords(pixelX, pixelY);
-      var cx = cellCoords.x,
-          cy = cellCoords.y;
-      $actionsList.push(["toggleCell", cx, cy])
+      if (clickInCell(pixelX, pixelY)) {
+        var cellCoords = pixelToCellCoords(pixelX, pixelY);
+        var cx = cellCoords.x,
+            cy = cellCoords.y;
+        $actionsList.push(["toggleCell", cx, cy])
+      }
     }
+  }
+
+  function clickInCell(pixelX, pixelY) {
+    // Check that click is not on the grid, but only if the grid is shown
+    return !(doShowGrid() && (pixelX - $pixelOffX) % $cellSize === 0 || (pixelY - $pixelOffY) % $cellSize === 0)
   }
 
   function processDrag(e) {
