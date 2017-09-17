@@ -156,9 +156,9 @@ $(document).ready(function () {
 
     if ((timestamp - scrollData.timestamp) > 70 && Math.abs(scrollData.delta) > 3) {
       if (delta > 3)
-        $actionsList.push(["zoomOut"]);
+        $actionsList.push(["zoomOut", [e.originalEvent.clientX, e.originalEvent.clientY]]);
       else if (delta < -3)
-        $actionsList.push(["zoomIn"]);
+        $actionsList.push(["zoomIn", [e.originalEvent.clientX, e.originalEvent.clientY]]);
       scrollData = {delta: 0, timestamp: null};
     }
   });
@@ -248,10 +248,10 @@ $(document).ready(function () {
           changeOffset(action[1], action[2]);
           break;
         case "zoomIn":
-          zoomCell($cellSize * 1.6);
+          zoomCell($cellSize * 1.6, action[1]);
           break;
         case "zoomOut":
-          zoomCell($cellSize / 1.6);
+          zoomCell($cellSize / 1.6, action[1]);
           break;
         case "autoFit":
           autoCenter();
@@ -290,12 +290,22 @@ $(document).ready(function () {
     changeOffset(newPixelOffX, newPixelOffY);
   }
 
-  function zoomCell(newCellSize) {
+  function zoomCell(newCellSize, coords) {
+    var centerDotScaleX, centerDotScaleY;
+    if (coords === undefined) {
+      centerDotScaleX = 0.5;
+      centerDotScaleY = 0.5;
+    }
+    else {
+      centerDotScaleX = coords[0] / $canvas.width;
+      centerDotScaleY = coords[1] / $canvas.height;
+    }
+
     var newFutureCellSize = newCellSize;
     if (newFutureCellSize >= 5) newFutureCellSize = Math.round(newFutureCellSize);
     var scale = newFutureCellSize / $cellSize,
-        newPixelOffX = ($canvas.width / 2) * (1 - scale) + (scale * $pixelOffX),
-        newPixelOffY = ($canvas.height / 2) * (1 - scale) + (scale * $pixelOffY);
+        newPixelOffX = ($canvas.width * centerDotScaleX) * (1 - scale) + (scale * $pixelOffX),
+        newPixelOffY = ($canvas.height * centerDotScaleY) * (1 - scale) + (scale * $pixelOffY);
     setState(
         {
           figure: $figure,
