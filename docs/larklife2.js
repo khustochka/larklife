@@ -13,8 +13,7 @@ $(document).ready(function () {
 
   var $actionsList = [];
 
-
-  var isDragging = false;
+  var isDragging = false, isMouseDown = false, dragX, dragY, touchMoveStart = null;
 
   var PATTERNS = {
     glider: {name: "Glider", pattern: [[2, 1], [3, 2], [1, 3], [2, 3], [3, 3]]},
@@ -110,7 +109,7 @@ $(document).ready(function () {
       dragY = e.clientY;
       $("body").css("cursor", "move");
       isMouseDown = true;
-      //$(document).on("mousemove", dragTheGrid);
+      $(document).on("mousemove", processDrag);
     }
   });
 
@@ -161,6 +160,17 @@ $(document).ready(function () {
     }
   }
 
+  function processDrag(e) {
+    if (isMouseDown) {
+      e.preventDefault();
+      isDragging = true;
+      var newX = e.clientX, newY = e.clientY;
+      $actionsList.push(["changeOffset", $pixelOffX + newX - dragX, $pixelOffY + newY - dragY]);
+      dragX = newX;
+      dragY = newY;
+    }
+  }
+
   function update() {
     var actions = $actionsList,
         action;
@@ -182,6 +192,9 @@ $(document).ready(function () {
           break;
         case "toggleCell":
           toggleCell(action[1], action[2]);
+          break;
+        case "changeOffset":
+          changeOffset(action[1], action[2]);
           break;
         case "autoFit":
           autoCenter();
@@ -217,6 +230,14 @@ $(document).ready(function () {
         newPixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize),
         newPixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize);
 
+    changeOffset(newPixelOffX, newPixelOffY);
+  }
+
+  function doShowGrid() {
+    return $showGrid && $cellSize >= 7
+  }
+
+  function changeOffset(newPixelOffX, newPixelOffY) {
     setState(
         {
           figure: $figure,
@@ -228,10 +249,6 @@ $(document).ready(function () {
           autoevolve: $autoevolve
         }
     );
-  }
-
-  function doShowGrid() {
-    return $showGrid && $cellSize >= 7
   }
 
   function pixelToCellCoords(pixelX, pixelY) {
