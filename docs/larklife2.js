@@ -298,7 +298,7 @@ $(document).ready(function () {
       else {
         stepsToGo = Math.floor($speed * (Date.now() - $lastEvoTime) / 1000);
       }
-      for(var j = 0; i < stepsToGo; i++)   {
+      for(var j = 0; j < stepsToGo; j++)   {
         processStep();
       }
     }
