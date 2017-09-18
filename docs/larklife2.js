@@ -511,11 +511,24 @@ $(document).ready(function () {
         historyDepth = $figure.length > 650 ? minHistoryDepth : maxHistoryDepth,
         newLastEvoTime = newAutoEvolve ? Date.now() : null; // We record the time evolution started, not when it ended.
 
-    var newFigure = evolve($figure);
+
+    var newFigure;
+    if ($period === 0) {
+      var evoT1 = Date.now();
+      newFigure = evolve($figure);
+      var evoT2 = Date.now();
+      console.log("Evolution took: " + (evoT2 - evoT1) + " ms");
+    }
+    // NOTE: history.length is effectively first period step?
+    else newFigure = $history[$history.length - $period + ($step + 1) % $period];
+
 
     // Check if it has period
     if (newPeriod === 0) {
+      var histT1 = Date.now();
       newPeriod = figureInHistory(newFigure);
+      var histT2 = Date.now();
+      console.log("History lookup took: " + (histT2 - histT1) + " ms")
     }
 
     if (newPeriod !== 1)
@@ -526,7 +539,9 @@ $(document).ready(function () {
       newHistory.splice(0, newHistory.length - historyDepth);
     }
     else {
-      newHistory = [];
+      if (newPeriod === 1) {
+        newHistory = [];
+      }
       if (!newFirstPeriodStep)
         newFirstPeriodStep = newStep;
     }
