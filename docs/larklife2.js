@@ -21,7 +21,7 @@ $(document).ready(function () {
   var isDragging = false, isMouseDown = false, dragX, dragY, touchMoveStart = null;
 
   var
-      maxHistoryDepth = 100,
+      maxHistoryDepth = 312,
       minHistoryDepth = 15,
       initialSpeed = 20;
 
@@ -296,11 +296,19 @@ $(document).ready(function () {
         stepsToGo = 1;
       }
       else {
-        stepsToGo = Math.floor($speed * (Date.now() - $lastEvoTime) / 1000);
+        var delta = (Date.now() - $lastEvoTime);
+        //console.log("Delta " + delta + " ms");
+        stepsToGo = Math.floor($speed * delta / 1000);
       }
-      for(var j = 0; j < stepsToGo; j++)   {
+      //console.log("Steps to go: "+ stepsToGo);
+      var j = 0, startTime = Date.now(), el_time;
+      while (j < stepsToGo && (!el_time || el_time < 1000 / $speed)) {
         processStep();
+        j++;
+        el_time = Date.now() - startTime;
+        //console.log("Elapsed: " + el_time + " ms");
       }
+      //console.log("Steps done: "+ j);
     }
   }
 
@@ -497,10 +505,14 @@ $(document).ready(function () {
     // If config is empty initially, just ignore.
     if ($figure.length === 0) return false;
     if ($period === 1) return false;
-    var newFigure = evolve($figure),
+    var
         newStep = $step, newPeriod = $period, newHistory = $history,
         newAutoEvolve = $autoevolve, newFirstPeriodStep = $firstPeriodStep,
-        historyDepth = $figure.length > 2000 ? minHistoryDepth : maxHistoryDepth;
+        historyDepth = $figure.length > 650 ? minHistoryDepth : maxHistoryDepth,
+        newLastEvoTime = newAutoEvolve ? Date.now() : null; // We record the time evolution started, not when it ended.
+
+    var newFigure = evolve($figure);
+
     // Check if it has period
     if (newPeriod === 0) {
       newPeriod = figureInHistory(newFigure);
@@ -531,7 +543,7 @@ $(document).ready(function () {
       firstPeriodStep: newFirstPeriodStep,
       history: newHistory,
       speed: $speed,
-      lastEvoTime: newAutoEvolve ? Date.now() : null
+      lastEvoTime: newLastEvoTime
     });
   }
 
@@ -682,8 +694,6 @@ $(document).ready(function () {
   // Cross-browser support for requestAnimationFrame
   var w = window;
   requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
-
-  var then = Date.now();
 
   fillInPatternList();
 
