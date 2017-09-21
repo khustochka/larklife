@@ -1,4 +1,4 @@
-$(document).ready(function () {
+document.addEventListener('DOMContentLoaded', function () {
 
   var $canvas = document.getElementById("lc");
 
@@ -200,34 +200,39 @@ $(document).ready(function () {
     }
   });
 
-  window.addEventListener('resize', function() {$actionsList.push(["resizeCanvas"])}, false);
-  window.addEventListener('orientationchange', function() {$actionsList.push(["resizeCanvas"])}, false);
+  window.addEventListener('resize', function() {
+    $actionsList.push(["resizeCanvas"])
+  });
 
-  $("#stepBtn").click(function () {
+  window.addEventListener('orientationchange', function() {
+    $actionsList.push(["resizeCanvas"])
+  });
+
+  document.getElementById("stepBtn").addEventListener("click", function () {
     $actionsList.push(["step"])
   });
 
-  $("button#clearBtn").click(function () {
+  document.getElementById("clearBtn").addEventListener("click", function () {
     $actionsList.push(["reset"])
   });
 
-  $("#goBtn").click(function () {
+  document.getElementById("goBtn").addEventListener("click", function () {
     $actionsList.push(["startEvolution"])
   });
 
-  $("#stopBtn").click(function () {
+  document.getElementById("stopBtn").addEventListener("click", function () {
     $actionsList.push(["stopEvolution"])
   });
 
-  $("#btnFit").click(function () {
+  document.getElementById("btnFit").addEventListener("click", function () {
     $actionsList.push(["autoFit"])
   });
 
-  $("button#plusSize").click(function () {
+  document.getElementById("plusSize").addEventListener("click", function () {
     $actionsList.push(["zoomIn"])
   });
 
-  $("button#minusSize").click(function () {
+  document.getElementById("minusSize").addEventListener("click", function () {
     $actionsList.push(["zoomOut"])
   });
 
