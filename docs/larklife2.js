@@ -16,7 +16,8 @@ $(document).ready(function () {
       $firstPeriodStep,
       $history,
       $speed, // Generations per second
-      $lastEvoTime;
+      $lastEvoTime,
+      $diedOut;
 
   var $actionsList = [];
 
@@ -82,6 +83,7 @@ $(document).ready(function () {
     $history = newst.history;
     $speed = newst.speed;
     $lastEvoTime = newst.lastEvoTime;
+    $diedOut = newst.diedOut;
   }
 
   function wantsToStopEvolution(message) {
@@ -106,7 +108,8 @@ $(document).ready(function () {
               firstPeriodStep: null,
               history: [PATTERNS[name].pattern],
               speed: $speed,
-              lastEvoTime: null
+              lastEvoTime: null,
+              diedOut: false
             }
         );
         autoCenter();
@@ -136,7 +139,8 @@ $(document).ready(function () {
           firstPeriodStep: null,
           history: [],
           speed: initialSpeed,
-          lastEvoTime: null
+          lastEvoTime: null,
+          diedOut: false
         }
     )
   }
@@ -349,7 +353,8 @@ $(document).ready(function () {
       firstPeriodStep: $firstPeriodStep,
       history: $history,
       speed: $speed,
-      lastEvoTime: $lastEvoTime
+      lastEvoTime: $lastEvoTime,
+      diedOut: $diedOut
     });
   }
 
@@ -408,7 +413,8 @@ $(document).ready(function () {
           firstPeriodStep: $firstPeriodStep,
           history: $history,
           speed: $speed,
-          lastEvoTime: $lastEvoTime
+          lastEvoTime: $lastEvoTime,
+          diedOut: $diedOut
         }
     );
   }
@@ -433,7 +439,8 @@ $(document).ready(function () {
           firstPeriodStep: $firstPeriodStep,
           history: $history,
           speed: $speed,
-          lastEvoTime: $lastEvoTime
+          lastEvoTime: $lastEvoTime,
+          diedOut: $diedOut
         }
     );
   }
@@ -525,7 +532,8 @@ $(document).ready(function () {
       showNotice("Population is oscillating with period " + $period + " (step " + $firstPeriodStep + " = step " + ($firstPeriodStep - $period) + ").");
     }
     else {
-      dropNotice();
+      if ($diedOut) showNotice("Population has died out.");
+      else dropNotice();
     }
 
   };
@@ -559,7 +567,7 @@ $(document).ready(function () {
       var evoT1 = Date.now();
       newFigure = evolve($figure);
       var evoT2 = Date.now();
-      console.log("Evolution took: " + (evoT2 - evoT1) + " ms");
+      //console.log("Evolution took: " + (evoT2 - evoT1) + " ms");
     }
     // NOTE: history.length is effectively first period step?
     else newFigure = $history[$history.length - $period + ($step + 1) % $period];
@@ -570,7 +578,7 @@ $(document).ready(function () {
       var histT1 = Date.now();
       newPeriod = figureInHistory(newFigure);
       var histT2 = Date.now();
-      console.log("History lookup took: " + (histT2 - histT1) + " ms")
+      //console.log("History lookup took: " + (histT2 - histT1) + " ms")
     }
 
     if (newPeriod !== 1)
@@ -587,7 +595,7 @@ $(document).ready(function () {
       if (!newFirstPeriodStep)
         newFirstPeriodStep = newStep;
     }
-    if (newPeriod === 1) newAutoEvolve = false;
+    if (newPeriod === 1 || newFigure.length === 0) newAutoEvolve = false;
     setState({
       figure: newFigure,
       step: newStep,
@@ -602,7 +610,8 @@ $(document).ready(function () {
       firstPeriodStep: newFirstPeriodStep,
       history: newHistory,
       speed: $speed,
-      lastEvoTime: newLastEvoTime
+      lastEvoTime: newLastEvoTime,
+      diedOut: newFigure.length === 0
     });
   }
 
@@ -643,7 +652,8 @@ $(document).ready(function () {
       firstPeriodStep: $firstPeriodStep,
       history: $history,
       speed: $speed,
-      lastEvoTime: null
+      lastEvoTime: null,
+      diedOut: $diedOut
     });
   }
 
@@ -662,7 +672,8 @@ $(document).ready(function () {
       firstPeriodStep: $firstPeriodStep,
       history: $history,
       speed: $speed,
-      lastEvoTime: null
+      lastEvoTime: null,
+      diedOut: $diedOut
     });
   }
 
@@ -693,6 +704,8 @@ $(document).ready(function () {
       }
       else neighbours[[a, b]] = 1;
     }
+
+    if (figure.length < 3) return([]);
 
     var newFigure = [], neighbours = {}, x, y, pnt, xpnt;
 
@@ -742,7 +755,8 @@ $(document).ready(function () {
         firstPeriodStep: null,
         history: [newFigure],
         speed: $speed,
-        lastEvoTime: null
+        lastEvoTime: null,
+        diedOut: false
       });
     }
   }
