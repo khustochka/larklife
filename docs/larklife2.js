@@ -5,6 +5,8 @@ $(document).ready(function () {
   // State
   var $figure,
       $step,
+      $width,
+      $height,
       $pixelOffX,
       $pixelOffY,
       $cellSize,
@@ -68,6 +70,8 @@ $(document).ready(function () {
   function setState(newst) {
     $figure = newst.figure;
     $step = newst.step;
+    $width = newst.width;
+    $height = newst.height;
     $pixelOffX = newst.pixelOffX;
     $pixelOffY = newst.pixelOffY;
     $cellSize = newst.cellSize;
@@ -91,6 +95,8 @@ $(document).ready(function () {
             {
               figure: PATTERNS[name].pattern,
               step: 0,
+              width: window.innerWidth,
+              height: window.innerHeight,
               pixelOffX: $pixelOffX ? $pixelOffX : -1,
               pixelOffY: $pixelOffY ? $pixelOffY : -1,
               cellSize: 18,
@@ -119,6 +125,8 @@ $(document).ready(function () {
         {
           figure: [],
           step: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
           pixelOffX: $pixelOffX ? $pixelOffX : -1,
           pixelOffY: $pixelOffY ? $pixelOffY : -1,
           cellSize: 18,
@@ -188,6 +196,9 @@ $(document).ready(function () {
     }
   });
 
+  window.addEventListener('resize', function() {$actionsList.push(["resizeCanvas"])}, false);
+  window.addEventListener('orientationchange', function() {$actionsList.push(["resizeCanvas"])}, false);
+
   $("#stepBtn").click(function () {
     $actionsList.push(["step"])
   });
@@ -220,8 +231,8 @@ $(document).ready(function () {
     var x = e.clientX, y = e.clientY,
         pixelX = x - $canvas.offsetLeft - 1,
         pixelY = y - $canvas.offsetTop - 1;
-    if (pixelX >= 0 && pixelX <= $canvas.width &&
-        pixelY >= 0 && pixelY <= $canvas.height) {
+    if (pixelX >= 0 && pixelX <= $width &&
+        pixelY >= 0 && pixelY <= $height) {
       if (clickInCell(pixelX, pixelY)) {
         var cellCoords = pixelToCellCoords(pixelX, pixelY);
         var cx = cellCoords.x,
@@ -283,6 +294,9 @@ $(document).ready(function () {
         case "autoFit":
           autoCenter();
           break;
+        case "resizeCanvas":
+          resizeCanvas();
+          break;
         case "reset":
           processClear();
           break;
@@ -312,6 +326,33 @@ $(document).ready(function () {
     }
   }
 
+  function resizeCanvas() {
+    var newWidth = window.innerWidth,
+        newHeight = window.innerHeight;
+
+    var widthDiff = newWidth - $width,
+        heightDiff = newHeight - $height,
+        newPixelOffX = $pixelOffX + (widthDiff / 2),
+        newPixelOffY = $pixelOffY + (heightDiff / 2);
+
+    setState({
+      figure: $figure,
+      step: $step,
+      width: newWidth,
+      height: newHeight,
+      pixelOffX: newPixelOffX,
+      pixelOffY: newPixelOffY,
+      cellSize: $cellSize,
+      showGrid: $showGrid,
+      autoevolve: $autoevolve,
+      period: $period,
+      firstPeriodStep: $firstPeriodStep,
+      history: $history,
+      speed: $speed,
+      lastEvoTime: $lastEvoTime
+    });
+  }
+
   function autoCenter() {
 
     var minX = $figure[0][0], minY = $figure[0][1], maxX = $figure[0][0], maxY = $figure[0][1];
@@ -327,11 +368,11 @@ $(document).ready(function () {
         cellNumHeight = maxY - minY + 1,
         pixelWidth = cellsNumWidth * $cellSize,
         pixelHeight = cellNumHeight * $cellSize,
-        newRel = Math.min($canvas.width / pixelWidth, $canvas.height / pixelHeight);
+        newRel = Math.min($width / pixelWidth, $height / pixelHeight);
 
     var
-        newPixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize),
-        newPixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize);
+        newPixelOffX = Math.round(($width - pixelWidth) / 2 - minX * $cellSize),
+        newPixelOffY = Math.round(($height - pixelHeight) / 2 - minY * $cellSize);
 
     changeOffset(newPixelOffX, newPixelOffY);
   }
@@ -343,19 +384,21 @@ $(document).ready(function () {
       centerDotScaleY = 0.5;
     }
     else {
-      centerDotScaleX = coords[0] / $canvas.width;
-      centerDotScaleY = coords[1] / $canvas.height;
+      centerDotScaleX = coords[0] / $width;
+      centerDotScaleY = coords[1] / $height;
     }
 
     var newFutureCellSize = newCellSize;
     if (newFutureCellSize >= 5) newFutureCellSize = Math.round(newFutureCellSize);
     var scale = newFutureCellSize / $cellSize,
-        newPixelOffX = ($canvas.width * centerDotScaleX) * (1 - scale) + (scale * $pixelOffX),
-        newPixelOffY = ($canvas.height * centerDotScaleY) * (1 - scale) + (scale * $pixelOffY);
+        newPixelOffX = ($width * centerDotScaleX) * (1 - scale) + (scale * $pixelOffX),
+        newPixelOffY = ($height * centerDotScaleY) * (1 - scale) + (scale * $pixelOffY);
     setState(
         {
           figure: $figure,
           step: $step,
+          width: $width,
+          height: $height,
           pixelOffX: newPixelOffX,
           pixelOffY: newPixelOffY,
           cellSize: newFutureCellSize,
@@ -371,7 +414,7 @@ $(document).ready(function () {
   }
 
   function doShowGrid() {
-    return $showGrid && $cellSize >= 7
+    return $showGrid && $cellSize >= 4
   }
 
   function changeOffset(newPixelOffX, newPixelOffY) {
@@ -379,6 +422,8 @@ $(document).ready(function () {
         {
           figure: $figure,
           step: $step,
+          width: $width,
+          height: $height,
           pixelOffX: newPixelOffX,
           pixelOffY: newPixelOffY,
           cellSize: $cellSize,
@@ -423,18 +468,15 @@ $(document).ready(function () {
     // Find canvas
     var ctx = $canvas.getContext("2d");
 
-    $canvas.width = window.innerWidth;
-    $canvas.height = window.innerHeight;
-
-    var canvasWidth = $canvas.width,
-        canvasHeight = $canvas.height;
+    $canvas.width = $width;
+    $canvas.height = $height;
 
     var radiusDiff = 1;
 
     var $radius = ($cellSize - radiusDiff) / 2;
 
     // Clear canvas
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    ctx.clearRect(0, 0, $width, $height);
 
     // Draw grid
     if (doShowGrid()) {
@@ -444,13 +486,13 @@ $(document).ready(function () {
       ctx.beginPath();
       ctx.strokeStyle = 'lightblue';
       ctx.lineWidth = 1;
-      for (var rx = 0.5 + offRemainderX; rx < canvasWidth; rx = rx + $cellSize) {
+      for (var rx = 0.5 + offRemainderX; rx < $width; rx = rx + $cellSize) {
         ctx.moveTo(rx, 0);
-        ctx.lineTo(rx, canvasHeight);
+        ctx.lineTo(rx, $height);
       }
-      for (var ry = 0.5 + offRemainderY; ry < canvasHeight; ry = ry + $cellSize) {
+      for (var ry = 0.5 + offRemainderY; ry < $height; ry = ry + $cellSize) {
         ctx.moveTo(0, ry);
-        ctx.lineTo(canvasWidth, ry);
+        ctx.lineTo($width, ry);
       }
       ctx.stroke();
     }
@@ -458,7 +500,7 @@ $(document).ready(function () {
     // Draw points
     var point,
         visibleMin = pixelToCellCoords(0, 0),
-        visibleMax = pixelToCellCoords(canvasWidth - 1, canvasHeight - 1);
+        visibleMax = pixelToCellCoords($width - 1, $height - 1);
 
     for (var i = 0; i < $figure.length; i++) {
       point = $figure[i];
@@ -492,7 +534,7 @@ $(document).ready(function () {
     var notice = $(".notice");
     notice.html(text);
     notice.show();
-    notice.css("left", ($canvas.width - notice.width()) / 2 + "px");
+    notice.css("left", ($width - notice.width()) / 2 + "px");
   }
 
   function dropNotice() {
@@ -549,6 +591,8 @@ $(document).ready(function () {
     setState({
       figure: newFigure,
       step: newStep,
+      width: $width,
+      height: $height,
       pixelOffX: $pixelOffX,
       pixelOffY: $pixelOffY,
       cellSize: $cellSize,
@@ -587,6 +631,8 @@ $(document).ready(function () {
     setState({
       figure: $figure,
       step: $step,
+      width: $width,
+      height: $height,
       pixelOffX: $pixelOffX,
       pixelOffY: $pixelOffY,
       cellSize: $cellSize,
@@ -605,6 +651,8 @@ $(document).ready(function () {
     setState({
       figure: $figure,
       step: $step,
+      width: $width,
+      height: $height,
       pixelOffX: $pixelOffX,
       pixelOffY: $pixelOffY,
       cellSize: $cellSize,
@@ -619,7 +667,7 @@ $(document).ready(function () {
   }
 
   function pairEqual(a, b) {
-    return (a[0] == b[0]) && (a[1] == b[1])
+    return (a[0] === b[0]) && (a[1] === b[1])
   }
 
   function indexOf(el, arr) {
@@ -663,7 +711,7 @@ $(document).ready(function () {
     for (var key in neighbours) {
       xpnt = key.split(",");
       pnt = [parseInt(xpnt[0]), parseInt(xpnt[1])];
-      if (neighbours[pnt] == 3 || (neighbours[pnt] == 2 && inArray(pnt, figure))) newFigure.push(pnt);
+      if (neighbours[pnt] === 3 || (neighbours[pnt] === 2 && inArray(pnt, figure))) newFigure.push(pnt);
     }
 
     return newFigure;
@@ -683,6 +731,8 @@ $(document).ready(function () {
       setState({
         figure: newFigure,
         step: 0,
+        width: $width,
+        height: $height,
         pixelOffX: $pixelOffX,
         pixelOffY: $pixelOffY,
         cellSize: $cellSize,
