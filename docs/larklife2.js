@@ -145,20 +145,20 @@ document.addEventListener('DOMContentLoaded', function () {
     )
   }
 
-  $($canvas).on("mousedown", function (e) {
+  $canvas.addEventListener("mousedown", function (e) {
     if (e.which === 1) { // Ignore right button
       e.preventDefault();
       dragX = e.clientX;
       dragY = e.clientY;
       $("body").css("cursor", "move");
       isMouseDown = true;
-      $(document).on("mousemove", processDrag);
+      document.addEventListener("mousemove", processDrag);
     }
   });
 
-  $(document).on("mouseup", function (e) {
+  document.addEventListener("mouseup", function (e) {
     e.preventDefault();
-    $(document).off("mousemove");
+    document.removeEventListener("mousemove", processDrag);
     $("body").css("cursor", "default");
     if (isDragging) {
     }
@@ -175,8 +175,8 @@ document.addEventListener('DOMContentLoaded', function () {
     return x > 0 ? 1 : x < 0 ? -1 : 0;
   }
 
-  $(document).on("wheel", function (e) {
-    var delta = e.originalEvent.deltaY, timestamp = e.originalEvent.timeStamp;
+  document.addEventListener("wheel", function (e) {
+    var delta = e.deltaY, timestamp = e.timeStamp;
 
     if (delta === 0) {
       scrollData = {delta: 0, timestamp: null};
@@ -193,9 +193,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if ((timestamp - scrollData.timestamp) > 70 && Math.abs(scrollData.delta) > 3) {
       if (delta > 3)
-        $actionsList.push(["zoomOut", [e.originalEvent.clientX, e.originalEvent.clientY]]);
+        $actionsList.push(["zoomOut", [e.clientX, e.clientY]]);
       else if (delta < -3)
-        $actionsList.push(["zoomIn", [e.originalEvent.clientX, e.originalEvent.clientY]]);
+        $actionsList.push(["zoomIn", [e.clientX, e.clientY]]);
       scrollData = {delta: 0, timestamp: null};
     }
   });
