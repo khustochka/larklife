@@ -169,6 +169,26 @@ document.addEventListener('DOMContentLoaded', function () {
     isDragging = false;
   });
 
+  $canvas.addEventListener("touchstart", function (e) {
+    //e.preventDefault();
+    touchMoveStart = [e.touches[0].pageX, e.touches[0].pageY];
+  });
+
+  $canvas.addEventListener("touchend", function (e) {
+    //e.preventDefault();
+    touchMoveStart = null;
+  });
+
+  document.addEventListener("touchmove", function (e) {
+    e.preventDefault();
+    if (touchMoveStart) {
+      $actionsList.push(["changeOffset",
+        $pixelOffX + e.touches[0].pageX - touchMoveStart[0],
+        $pixelOffY + e.touches[0].pageY - touchMoveStart[1]]);
+      touchMoveStart = [e.touches[0].pageX, e.touches[0].pageY];
+    }
+  });
+
   var scrollData = {delta: 0, timestamp: null};
 
   function sign(x) {
