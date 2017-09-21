@@ -9,6 +9,10 @@ html, body {
     padding: 0;
 }
 
+body {
+    overflow-y: hidden;
+}
+
 /* just to be sure these are full screen*/
 
 canvas {

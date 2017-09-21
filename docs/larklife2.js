@@ -169,14 +169,14 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   $canvas.addEventListener("touchstart", function (e) {
-    //e.preventDefault();
+    e.preventDefault();
     dragX = e.touches[0].pageX;
     dragY = e.touches[0].pageY;
     isMouseDown = true;
   });
 
   $canvas.addEventListener("touchend", function (e) {
-    //e.preventDefault();
+    e.preventDefault();
     isMouseDown = null;
     isDragging = null;
   });
