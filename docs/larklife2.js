@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var $actionsList = [];
 
-  var isDragging = false, isMouseDown = false, dragX, dragY, touchMoveStart = null;
+  var isDragging = false, isMouseDown = false, dragX, dragY;
 
   var
       maxHistoryDepth = 312,
@@ -150,7 +150,6 @@ document.addEventListener('DOMContentLoaded', function () {
       e.preventDefault();
       dragX = e.clientX;
       dragY = e.clientY;
-      $("body").css("cursor", "move");
       isMouseDown = true;
       document.addEventListener("mousemove", processDrag);
     }
@@ -171,23 +170,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
   $canvas.addEventListener("touchstart", function (e) {
     //e.preventDefault();
-    touchMoveStart = [e.touches[0].pageX, e.touches[0].pageY];
+    dragX = e.touches[0].pageX;
+    dragY = e.touches[0].pageY;
+    isMouseDown = true;
   });
 
   $canvas.addEventListener("touchend", function (e) {
     //e.preventDefault();
-    touchMoveStart = null;
+    isMouseDown = null;
+    isDragging = null;
   });
 
-  document.addEventListener("touchmove", function (e) {
-    e.preventDefault();
-    if (touchMoveStart) {
-      $actionsList.push(["changeOffset",
-        $pixelOffX + e.touches[0].pageX - touchMoveStart[0],
-        $pixelOffY + e.touches[0].pageY - touchMoveStart[1]]);
-      touchMoveStart = [e.touches[0].pageX, e.touches[0].pageY];
+  document.addEventListener("touchmove", processDrag);
+
+  function processDrag(e) {
+    if (isMouseDown) {
+      var touch = e.type === "touchmove";
+      e.preventDefault();
+      $("body").css("cursor", "move");
+      isDragging = true;
+      var newX = touch ? e.touches[0].pageX : e.clientX,
+          newY = touch ? e.touches[0].pageY : e.clientY;
+      $actionsList.push(["changeOffset", $pixelOffX + newX - dragX, $pixelOffY + newY - dragY]);
+      dragX = newX;
+      dragY = newY;
     }
-  });
+  }
 
   var scrollData = {delta: 0, timestamp: null};
 
@@ -220,11 +228,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', function () {
     $actionsList.push(["resizeCanvas"])
   });
 
-  window.addEventListener('orientationchange', function() {
+  window.addEventListener('orientationchange', function () {
     $actionsList.push(["resizeCanvas"])
   });
 
@@ -276,17 +284,6 @@ document.addEventListener('DOMContentLoaded', function () {
     return !(doShowGrid() && (pixelX - $pixelOffX) % $cellSize === 0 || (pixelY - $pixelOffY) % $cellSize === 0)
   }
 
-  function processDrag(e) {
-    if (isMouseDown) {
-      e.preventDefault();
-      isDragging = true;
-      var newX = e.clientX, newY = e.clientY;
-      $actionsList.push(["changeOffset", $pixelOffX + newX - dragX, $pixelOffY + newY - dragY]);
-      dragX = newX;
-      dragY = newY;
-    }
-  }
-
   function update() {
     var actions = $actionsList,
         action;
@@ -335,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if ($autoevolve) {
       var stepsToGo = 0;
-      if (!$lastEvoTime){
+      if (!$lastEvoTime) {
         stepsToGo = 1;
       }
       else {
@@ -730,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function () {
       else neighbours[[a, b]] = 1;
     }
 
-    if (figure.length < 3) return([]);
+    if (figure.length < 3) return ([]);
 
     var newFigure = [], neighbours = {}, x, y, pnt, xpnt;
 
