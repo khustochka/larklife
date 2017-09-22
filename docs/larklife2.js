@@ -364,7 +364,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       //console.log("Steps done: "+ j);
     }
-    if (document.getElementById("autoFit").checked) fitToScreen();
   }
 
   function resizeCanvas() {
@@ -548,7 +547,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function drawPoint(ctx, x, y) {
       var radiusDiff = 1;
-      ctx.fillStyle = "#336633";
+      ctx.fillStyle = "#196F3D";
       if (doShowGrid()) {
         var canvasCenterX = (x * $cellSize) + $pixelOffX + $radius + radiusDiff,
             canvasCenterY = (y * $cellSize) + $pixelOffY + $radius + radiusDiff;
@@ -559,7 +558,6 @@ document.addEventListener('DOMContentLoaded', function () {
       else {
         var topX = (x * $cellSize) + $pixelOffX + radiusDiff,
             topY = (y * $cellSize) + $pixelOffY + radiusDiff;
-        ctx.fillStyle = "#336633";
         ctx.fillRect(topX, topY, $cellSize, $cellSize);
       }
     }
@@ -707,6 +705,7 @@ document.addEventListener('DOMContentLoaded', function () {
       lastEvoTime: newLastEvoTime,
       diedOut: newFigure.length === 0
     });
+    if (document.getElementById("autoFit").checked) $actionsList.push(["fitToScreen"]);
   }
 
   function figureInHistory(figure) {
