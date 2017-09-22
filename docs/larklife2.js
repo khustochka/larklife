@@ -15,9 +15,12 @@ document.addEventListener('DOMContentLoaded', function () {
       $period,
       $firstPeriodStep,
       $history,
-      $speed, // Generations per second
+      $speedIndex = 3, // Generations per second
       $lastEvoTime,
       $diedOut;
+
+  
+  var speedOptions = [2, 5, 10, 20, 30, 60, 100];
 
   var $actionsList = [];
 
@@ -25,8 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var
       maxHistoryDepth = 312,
-      minHistoryDepth = 15,
-      initialSpeed = 20;
+      minHistoryDepth = 15;
 
   var PATTERNS = {
     glider: {name: "Glider", pattern: [[2, 1], [3, 2], [1, 3], [2, 3], [3, 3]]},
@@ -81,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
     $period = newst.period;
     $firstPeriodStep = newst.firstPeriodStep;
     $history = newst.history;
-    $speed = newst.speed;
+    $speedIndex = newst.speedIndex;
     $lastEvoTime = newst.lastEvoTime;
     $diedOut = newst.diedOut;
   }
@@ -107,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
               period: 0,
               firstPeriodStep: null,
               history: [PATTERNS[name].pattern],
-              speed: $speed,
+              speedIndex: $speedIndex,
               lastEvoTime: null,
               diedOut: false
             }
@@ -138,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
           period: 0,
           firstPeriodStep: null,
           history: [],
-          speed: initialSpeed,
+          speedIndex: $speedIndex,
           lastEvoTime: null,
           diedOut: false
         }
@@ -264,6 +266,14 @@ document.addEventListener('DOMContentLoaded', function () {
     $actionsList.push(["zoomOut"])
   });
 
+  $("#btnFaster").click(function () {
+    $speedIndex = Math.min($speedIndex + 1, speedOptions.length - 1);
+  });
+
+  $("#btnSlower").click(function () {
+    $speedIndex = Math.max($speedIndex - 1, 0);
+  });
+
   function processClick(e) {
     var x = e.clientX, y = e.clientY,
         pixelX = x - $canvas.offsetLeft - 1,
@@ -282,6 +292,10 @@ document.addEventListener('DOMContentLoaded', function () {
   function clickInCell(pixelX, pixelY) {
     // Check that click is not on the grid, but only if the grid is shown
     return !(doShowGrid() && (pixelX - $pixelOffX) % $cellSize === 0 || (pixelY - $pixelOffY) % $cellSize === 0)
+  }
+
+  function speed() {
+    return speedOptions[$speedIndex];
   }
 
   function update() {
@@ -338,11 +352,11 @@ document.addEventListener('DOMContentLoaded', function () {
       else {
         var delta = (Date.now() - $lastEvoTime);
         //console.log("Delta " + delta + " ms");
-        stepsToGo = Math.floor($speed * delta / 1000);
+        stepsToGo = Math.floor(speed() * delta / 1000);
       }
       //console.log("Steps to go: "+ stepsToGo);
       var j = 0, startTime = Date.now(), el_time;
-      while (j < stepsToGo && (!el_time || el_time < 1000 / $speed)) {
+      while (j < stepsToGo && (!el_time || el_time < 1000 / speed())) {
         processStep();
         j++;
         el_time = Date.now() - startTime;
@@ -374,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function () {
       period: $period,
       firstPeriodStep: $firstPeriodStep,
       history: $history,
-      speed: $speed,
+      speedIndex: $speedIndex,
       lastEvoTime: $lastEvoTime,
       diedOut: $diedOut
     });
@@ -434,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function () {
           period: $period,
           firstPeriodStep: $firstPeriodStep,
           history: $history,
-          speed: $speed,
+          speedIndex: $speedIndex,
           lastEvoTime: $lastEvoTime,
           diedOut: $diedOut
         }
@@ -460,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function () {
           period: $period,
           firstPeriodStep: $firstPeriodStep,
           history: $history,
-          speed: $speed,
+          speedIndex: $speedIndex,
           lastEvoTime: $lastEvoTime,
           diedOut: $diedOut
         }
@@ -543,6 +557,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Show step and size
     $(".stepNum").html($step);
     $(".sizeNum").html($figure.length);
+
+    $(".showSpeed").html(speed() + " gen/s");
 
     if ($period === 1) {
       if ($step === 0)
@@ -631,7 +647,7 @@ document.addEventListener('DOMContentLoaded', function () {
       period: newPeriod,
       firstPeriodStep: newFirstPeriodStep,
       history: newHistory,
-      speed: $speed,
+      speedIndex: $speedIndex,
       lastEvoTime: newLastEvoTime,
       diedOut: newFigure.length === 0
     });
@@ -673,7 +689,7 @@ document.addEventListener('DOMContentLoaded', function () {
       period: $period,
       firstPeriodStep: $firstPeriodStep,
       history: $history,
-      speed: $speed,
+      speedIndex: $speedIndex,
       lastEvoTime: null,
       diedOut: $diedOut
     });
@@ -693,7 +709,7 @@ document.addEventListener('DOMContentLoaded', function () {
       period: $period,
       firstPeriodStep: $firstPeriodStep,
       history: $history,
-      speed: $speed,
+      speedIndex: $speedIndex,
       lastEvoTime: null,
       diedOut: $diedOut
     });
@@ -776,7 +792,7 @@ document.addEventListener('DOMContentLoaded', function () {
         period: 0,
         firstPeriodStep: null,
         history: [newFigure],
-        speed: $speed,
+        speedIndex: $speedIndex,
         lastEvoTime: null,
         diedOut: false
       });
