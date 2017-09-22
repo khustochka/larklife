@@ -56,16 +56,20 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function fillInPatternList() {
-    var ul = $(".patterns"), li, pattern;
+    var ul = $(".patterns"), li, a, pattern;
     for (var key in PATTERNS) {
       pattern = PATTERNS[key];
-      li = $("<li>", {text: pattern.name});
+      li = $("<li>");
+      a = $("<a>", {text: pattern.name, href: "#" + key});
+      li.append(a);
       ul.append(li);
       li.data("name", key);
     }
 
-    $(".patterns li").click(function () {
-      $actionsList.push(["loadPattern", $(this).data("name")]);
+    $(".patterns li a").click(function (e) {
+      e.preventDefault();
+      window.location.replace(e.target.href);
+      $actionsList.push(["detectPatternFromHash"]);
     });
 
   }
@@ -90,6 +94,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function wantsToStopEvolution(message) {
     return !$autoevolve || $autoevolve && window.confirm(message)
+  }
+
+  function detectPatternFromHash() {
+    loadPattern(window.location.hash.substr(1));
   }
 
   function loadPattern(name) {
@@ -306,8 +314,8 @@ document.addEventListener('DOMContentLoaded', function () {
     for (var i = 0; i < actions.length; i++) {
       action = actions[i];
       switch (action[0]) {
-        case "loadPattern":
-          loadPattern(action[1]);
+        case "detectPatternFromHash":
+          detectPatternFromHash();
           break;
         case "step":
           if (!$autoevolve)
@@ -432,7 +440,7 @@ document.addEventListener('DOMContentLoaded', function () {
       maxY = Math.max(maxY, $figure[i][1]);
     }
 
-    // Additional margin for improve autofit feel
+    // Additional margin to improve autofit feel
     minX -= 0.7;
     maxX += 0.7;
     minY -= 0.7;
@@ -877,6 +885,7 @@ document.addEventListener('DOMContentLoaded', function () {
   fillInPatternList();
 
   resetState();
+  detectPatternFromHash();
   mainLoop();
 
 });

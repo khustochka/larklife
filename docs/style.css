@@ -207,13 +207,19 @@ ul.patterns {
 }
 
 ul.patterns li {
-    font-weight: normal;
-    color: #777777;
     list-style: none;
     margin: 10px 0;
+}
+
+ul.patterns li a {
+    font-weight: normal;
+    color: #777777;
     font-size: 16px;
-    cursor: pointer;
     text-decoration: underline;
+}
+
+ul.patterns li a:hover {
+    color: #333333;
 }
 
 .drop {
