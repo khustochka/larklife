@@ -115,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         );
         autoCenter();
+        fitToScreen();
       }
     }
   }
@@ -431,6 +432,12 @@ document.addEventListener('DOMContentLoaded', function () {
       maxY = Math.max(maxY, $figure[i][1]);
     }
 
+    // Additional margin for improve autofit feel
+    minX -= 0.7;
+    maxX += 0.7;
+    minY -= 0.7;
+    maxY += 0.7;
+
     var cellsNumWidth = maxX - minX + 1,
         cellNumHeight = maxY - minY + 1,
         pixelWidth = cellsNumWidth * $cellSize,
@@ -446,8 +453,8 @@ document.addEventListener('DOMContentLoaded', function () {
       //var units = 10;
       var oldPixelX = $pixelOffX,
           oldPixelY = $pixelOffY,
-          newPixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize),
-          newPixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize);
+          newPixelOffX = Math.round(($width - pixelWidth) / 2 - minX * $cellSize),
+          newPixelOffY = Math.round(($height - pixelHeight) / 2 - minY * $cellSize);
           //diffX = (newPixelOffX - $pixelOffX) / units,
           //diffY = (newPixelOffY - $pixelOffY) / units;
       // if (move) {
