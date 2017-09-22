@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
       $lastEvoTime,
       $diedOut;
 
-  
+
   var speedOptions = [2, 5, 10, 20, 30, 60, 100];
 
   var $actionsList = [];
@@ -52,6 +52,9 @@ document.addEventListener('DOMContentLoaded', function () {
     max: {
       name: "Max (space filler)",
       pattern: [[6, 9], [6, 10], [6, 11], [6, 15], [6, 16], [6, 17], [7, 9], [7, 17], [7, 14], [7, 12], [8, 9], [9, 9], [8, 17], [9, 17], [7, 20], [8, 20], [8, 21], [9, 21], [10, 21], [8, 22], [9, 22], [8, 23], [9, 23], [10, 10], [11, 10], [10, 12], [11, 12], [10, 14], [11, 14], [10, 16], [11, 16], [12, 11], [12, 15], [13, 10], [13, 11], [13, 12], [13, 13], [13, 14], [13, 15], [13, 16], [12, 21], [13, 22], [13, 23], [13, 24], [13, 25], [13, 26], [12, 26], [11, 25], [11, 24], [11, 23], [10, 25], [13, 27], [14, 27], [15, 27], [14, 28], [15, 22], [15, 23], [16, 21], [16, 24], [17, 23], [18, 24], [18, 25], [16, 25], [17, 25], [18, 26], [19, 26], [20, 26], [21, 25], [22, 24], [22, 23], [21, 21], [21, 20], [22, 20], [23, 20], [23, 21], [20, 22], [19, 20], [18, 20], [19, 19], [19, 18], [15, 13], [16, 12], [16, 14], [17, 13], [17, 15], [16, 16], [15, 16], [15, 17], [16, 18], [17, 18], [17, 17], [19, 17], [19, 16], [19, 15], [15, 9], [15, 10], [16, 10], [17, 10], [17, 9], [19, 14], [19, 13], [19, 12], [19, 11], [19, 10], [20, 10], [18, 8], [16, 7], [16, 6], [17, 5], [18, 4], [19, 4], [20, 4], [20, 5], [21, 5], [22, 5], [20, 6], [21, 7], [22, 6], [23, 7], [23, 8], [22, 9], [22, 18], [21, 17], [22, 16], [23, 17], [21, 15], [22, 14], [23, 14], [23, 13], [22, 12], [21, 12], [21, 13], [25, 20], [25, 19], [25, 18], [25, 17], [25, 16], [25, 15], [25, 14], [26, 15], [26, 19], [27, 14], [28, 14], [27, 16], [28, 16], [27, 18], [28, 18], [27, 20], [28, 20], [29, 21], [30, 21], [31, 21], [32, 21], [32, 20], [32, 19], [31, 18], [31, 16], [32, 15], [32, 14], [32, 13], [31, 13], [30, 13], [29, 13], [25, 8], [25, 7], [26, 9], [25, 6], [25, 5], [25, 4], [25, 3], [26, 4], [24, 3], [23, 3], [24, 2], [27, 5], [27, 6], [27, 7], [28, 5], [28, 9], [29, 9], [30, 9], [29, 8], [29, 7], [30, 7], [30, 8], [30, 10], [31, 10]]
+    },
+    random: {
+      name: "Random soup (33%)"
     }
   };
 
@@ -101,22 +104,43 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function loadPattern(name) {
-    if (PATTERNS[name]) {
+    var pattern = PATTERNS[name],
+        percent = 0.33;
+    if (pattern) {
       if (wantsToStopEvolution("Evolution is in progress. Do you want to stop it?")) {
+        var newPattern = pattern.pattern, newCell, newCellSize = 18;
+        if (!newPattern) {
+          newPattern = [];
+          var widthInCells = Math.floor($width / $cellSize),
+              heightInCells = Math.floor($height / $cellSize),
+              area = widthInCells * heightInCells,
+              i = 0;
+          while (i <= (area * percent)) {
+            newCell = [
+                Math.floor(Math.random() * widthInCells),
+                Math.floor(Math.random() * heightInCells)
+            ];
+            if (!inArray(newCell, newPattern))  {
+              newPattern.push(newCell);
+              i++;
+            }
+          }
+          newCellSize = $cellSize;
+        }
         setState(
             {
-              figure: PATTERNS[name].pattern,
+              figure: newPattern,
               step: 0,
               width: window.innerWidth,
               height: window.innerHeight,
               pixelOffX: $pixelOffX ? $pixelOffX : -1,
               pixelOffY: $pixelOffY ? $pixelOffY : -1,
-              cellSize: 18,
+              cellSize: newCellSize,
               showGrid: true,
               autoevolve: false,
               period: 0,
               firstPeriodStep: null,
-              history: [PATTERNS[name].pattern],
+              history: newPattern,
               speedIndex: $speedIndex,
               lastEvoTime: null,
               diedOut: false
@@ -426,11 +450,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     changeOffset(newPixelOffX, newPixelOffY);
   }
-  
+
   function fitToScreen() {
 
     if ($figure.length === 0) return false;
-    
+
     var minX = $figure[0][0], minY = $figure[0][1], maxX = $figure[0][0], maxY = $figure[0][1];
 
     for (var i = 1; i < $figure.length; i++) {
@@ -463,8 +487,8 @@ document.addEventListener('DOMContentLoaded', function () {
           oldPixelY = $pixelOffY,
           newPixelOffX = Math.round(($width - pixelWidth) / 2 - minX * $cellSize),
           newPixelOffY = Math.round(($height - pixelHeight) / 2 - minY * $cellSize);
-          //diffX = (newPixelOffX - $pixelOffX) / units,
-          //diffY = (newPixelOffY - $pixelOffY) / units;
+      //diffX = (newPixelOffX - $pixelOffX) / units,
+      //diffY = (newPixelOffY - $pixelOffY) / units;
       // if (move) {
       //   var j = 1;
       //   var smoothCenter = function () {
