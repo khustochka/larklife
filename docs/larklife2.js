@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var newFutureCellSize = newCellSize;
-    if (newFutureCellSize >= 5) newFutureCellSize = Math.round(newFutureCellSize);
+    //if (newFutureCellSize >= 5) newFutureCellSize = Math.round(newFutureCellSize);
     var scale = newFutureCellSize / $cellSize,
         newPixelOffX = ($width * centerDotScaleX) * (1 - scale) + (scale * $pixelOffX),
         newPixelOffY = ($height * centerDotScaleY) * (1 - scale) + (scale * $pixelOffY);
