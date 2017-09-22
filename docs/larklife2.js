@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   document.getElementById("btnFit").addEventListener("click", function () {
-    $actionsList.push(["autoFit"])
+    $actionsList.push(["fitToScreen"])
   });
 
   document.getElementById("plusSize").addEventListener("click", function () {
@@ -331,8 +331,8 @@ document.addEventListener('DOMContentLoaded', function () {
         case "zoomOut":
           zoomCell($cellSize / 1.6, action[1]);
           break;
-        case "autoFit":
-          autoCenter();
+        case "fitToScreen":
+          fitToScreen();
           break;
         case "resizeCanvas":
           resizeCanvas();
@@ -364,6 +364,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       //console.log("Steps done: "+ j);
     }
+    if (document.getElementById("autoFit").checked) fitToScreen();
   }
 
   function resizeCanvas() {
@@ -416,6 +417,61 @@ document.addEventListener('DOMContentLoaded', function () {
         newPixelOffY = Math.round(($height - pixelHeight) / 2 - minY * $cellSize);
 
     changeOffset(newPixelOffX, newPixelOffY);
+  }
+  
+  function fitToScreen() {
+
+    if ($figure.length === 0) return false;
+    
+    var minX = $figure[0][0], minY = $figure[0][1], maxX = $figure[0][0], maxY = $figure[0][1];
+
+    for (var i = 1; i < $figure.length; i++) {
+      minX = Math.min(minX, $figure[i][0]);
+      maxX = Math.max(maxX, $figure[i][0]);
+      minY = Math.min(minY, $figure[i][1]);
+      maxY = Math.max(maxY, $figure[i][1]);
+    }
+
+    var cellsNumWidth = maxX - minX + 1,
+        cellNumHeight = maxY - minY + 1,
+        pixelWidth = cellsNumWidth * $cellSize,
+        pixelHeight = cellNumHeight * $cellSize,
+        newRel = Math.min($width / pixelWidth, $height / pixelHeight);
+
+    var screenMinX = Math.floor(-$pixelOffX / $cellSize),
+        screenMinY = Math.floor(-$pixelOffY / $cellSize),
+        screenMaxX = Math.ceil(($width - $pixelOffX) / $cellSize),
+        screenMaxY = Math.ceil(($height - $pixelOffY) / $cellSize);
+
+    if (minX < screenMinX || minY < screenMinY || maxX > screenMaxX || maxY > screenMaxY) {
+      //var units = 10;
+      var oldPixelX = $pixelOffX,
+          oldPixelY = $pixelOffY,
+          newPixelOffX = Math.round(($canvas.width - pixelWidth) / 2 - minX * $cellSize),
+          newPixelOffY = Math.round(($canvas.height - pixelHeight) / 2 - minY * $cellSize);
+          //diffX = (newPixelOffX - $pixelOffX) / units,
+          //diffY = (newPixelOffY - $pixelOffY) / units;
+      // if (move) {
+      //   var j = 1;
+      //   var smoothCenter = function () {
+      //     $pixelOffX = oldPixelX + Math.floor(diffX * j);
+      //     $pixelOffY = oldPixelY + Math.floor(diffY * j);
+      //     redrawState();
+      //     j++;
+      //     if (j < units) setTimeout(smoothCenter, 1000 / 60);
+      //     else {
+      //       if (newRel < 1) setTimeout(function () {
+      //         calcNewScale($cellSize * newRel);
+      //         redrawState();
+      //       }, 100)
+      //     }
+      //   };
+      //   smoothCenter();
+      // }
+      changeOffset(newPixelOffX, newPixelOffY);
+      if (newRel < 1) zoomCell($cellSize * newRel);
+
+    }
   }
 
   function zoomCell(newCellSize, coords) {
