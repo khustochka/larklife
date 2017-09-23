@@ -706,7 +706,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if ($diedOut) showNotice("Population has died out.");
       else dropNotice();
     }
-    console.log(Math.round(fps) + " FPS");
+    //console.log(Math.round(fps) + " FPS");
   };
 
   function showNotice(text) {
