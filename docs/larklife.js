@@ -225,6 +225,11 @@ document.addEventListener('DOMContentLoaded', function () {
     isDragging = null;
   });
 
+  $canvas.addEventListener("touchcancel", function (e) {
+    isMouseDown = null;
+    isDragging = null;
+  });
+
   document.addEventListener("touchmove", processDrag);
 
   function processDrag(e) {
