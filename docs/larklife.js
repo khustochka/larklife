@@ -208,6 +208,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // But it causes ugly shadows when scrolling.
     // If we uncomment, on iOS we can emulate clicking the different way
     // But on Android it's a pain.
+    // PS: shadows on page edges on dragging seem to be fixed by user-scalable=0
     //e.preventDefault();
 
     dragX = e.touches[0].pageX;
@@ -220,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // But it causes ugly shadows when scrolling.
     // If we uncomment, on iOS we can emulate clicking the different way
     // But on Android it's a pain.
+    // PS: shadows on page edges on dragging seem to be fixed by user-scalable=0
     //e.preventDefault();
     isMouseDown = null;
     isDragging = null;
