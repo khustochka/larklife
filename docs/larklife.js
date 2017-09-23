@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // State
   var $figure,
+      $genId,
       $step,
       $width,
       $height,
@@ -22,13 +23,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var speedOptions = [2, 5, 10, 20, 30, 60, 100];
 
-  var $actionsList = [];
+  var $actionsList = [],
+      $evoCache = {};
 
   var isDragging = false, isMouseDown = false, dragX, dragY;
 
   var
       maxHistoryDepth = 312,
       minHistoryDepth = 15;
+
+  var worker = new Worker('worker.js');
+
+  worker.addEventListener('message', function(e) {
+    $evoCache[e.data.genId] = e.data.figure;
+  }, false);
 
   var PATTERNS = {
     glider: {name: "Glider", pattern: [[2, 1], [3, 2], [1, 3], [2, 3], [3, 3]]},
@@ -78,7 +86,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function setState(newst) {
+    var oldGenId = $genId;
+
     $figure = newst.figure;
+    $genId = newst.genId;
     $step = newst.step;
     $width = newst.width;
     $height = newst.height;
@@ -93,6 +104,10 @@ document.addEventListener('DOMContentLoaded', function () {
     $speedIndex = newst.speedIndex;
     $lastEvoTime = newst.lastEvoTime;
     $diedOut = newst.diedOut;
+
+    if ($genId && $genId !== oldGenId) {
+      worker.postMessage({genId: $genId, figure: $figure});
+    }
   }
 
   function wantsToStopEvolution(message) {
@@ -103,6 +118,10 @@ document.addEventListener('DOMContentLoaded', function () {
     loadPattern(window.location.hash.substr(1));
   }
 
+  function generateNewId() {
+    return new Date().valueOf();
+  }
+  
   function loadPattern(name) {
     var pattern = PATTERNS[name],
         percent = 0.33;
@@ -130,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setState(
             {
               figure: newPattern,
+              genId: generateNewId(),
               step: 0,
               width: window.innerWidth,
               height: window.innerHeight,
@@ -162,6 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setState(
         {
           figure: [],
+          genId: null,
           step: 0,
           width: window.innerWidth,
           height: window.innerHeight,
@@ -426,6 +447,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setState({
       figure: $figure,
+      genId: $genId,
       step: $step,
       width: newWidth,
       height: newHeight,
@@ -547,6 +569,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setState(
         {
           figure: $figure,
+          genId: $genId,
           step: $step,
           width: $width,
           height: $height,
@@ -573,6 +596,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setState(
         {
           figure: $figure,
+          genId: $genId,
           step: $step,
           width: $width,
           height: $height,
@@ -682,7 +706,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if ($diedOut) showNotice("Population has died out.");
       else dropNotice();
     }
-    //console.log(Math.round(fps) + " FPS");
+    console.log(Math.round(fps) + " FPS");
   };
 
   function showNotice(text) {
@@ -712,9 +736,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var newFigure;
     if ($period === 0) {
       var evoT1 = Date.now();
-      newFigure = evolve($figure);
+      newFigure = getEvolution($genId);
       var evoT2 = Date.now();
       //console.log("Evolution took: " + (evoT2 - evoT1) + " ms");
+      if (!newFigure) return false;
     }
     // NOTE: history.length is effectively first period step?
     else newFigure = $history[$history.length - $period + ($step + 1) % $period];
@@ -745,6 +770,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (newPeriod === 1 || newFigure.length === 0) newAutoEvolve = false;
     setState({
       figure: newFigure,
+      genId: (newFigure.length > 2 && !newPeriod) ? generateNewId() : null,
       step: newStep,
       width: $width,
       height: $height,
@@ -761,6 +787,14 @@ document.addEventListener('DOMContentLoaded', function () {
       diedOut: newFigure.length === 0
     });
     if (document.getElementById("autoFit").checked) $actionsList.push(["fitToScreen"]);
+  }
+
+  function getEvolution(genId) {
+    var newFigure = $evoCache[genId];
+    if (newFigure) {
+      $evoCache[genId] = null;
+    }
+    return newFigure;
   }
 
   function figureInHistory(figure) {
@@ -787,6 +821,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if ($figure.length === 0) return false;
     setState({
       figure: $figure,
+      genId: $genId,
       step: $step,
       width: $width,
       height: $height,
@@ -808,6 +843,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function stopEvolution() {
     setState({
       figure: $figure,
+      genId: $genId,
       step: $step,
       width: $width,
       height: $height,
@@ -844,41 +880,6 @@ document.addEventListener('DOMContentLoaded', function () {
     return indexOf(el, arr) > -1
   }
 
-  function evolve(figure) {
-
-    function insertNeighbour(neighbours, a, b) {
-      if (neighbours[[a, b]]) {
-        neighbours[[a, b]] = neighbours[[a, b]] + 1
-      }
-      else neighbours[[a, b]] = 1;
-    }
-
-    if (figure.length < 3) return ([]);
-
-    var newFigure = [], neighbours = {}, x, y, pnt, xpnt;
-
-    for (var i = 0; i < figure.length; i++) {
-      x = $figure[i][0];
-      y = $figure[i][1];
-      insertNeighbour(neighbours, x - 1, y - 1);
-      insertNeighbour(neighbours, x - 1, y);
-      insertNeighbour(neighbours, x - 1, y + 1);
-      insertNeighbour(neighbours, x, y - 1);
-      insertNeighbour(neighbours, x, y + 1);
-      insertNeighbour(neighbours, x + 1, y - 1);
-      insertNeighbour(neighbours, x + 1, y);
-      insertNeighbour(neighbours, x + 1, y + 1);
-    }
-    for (var key in neighbours) {
-      xpnt = key.split(",");
-      pnt = [parseInt(xpnt[0]), parseInt(xpnt[1])];
-      if (neighbours[pnt] === 3 || (neighbours[pnt] === 2 && inArray(pnt, figure))) newFigure.push(pnt);
-    }
-
-    return newFigure;
-
-  }
-
   function toggleCell(x, y) {
     if (wantsToStopEvolution("Evolution is in progress. Do you want to stop it?")) {
       var newFigure = $figure;
@@ -891,6 +892,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       setState({
         figure: newFigure,
+        genId: newFigure.length > 2 ? $genId : null,
         step: 0,
         width: $width,
         height: $height,
