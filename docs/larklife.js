@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
               autoevolve: false,
               period: 0,
               firstPeriodStep: null,
-              history: newPattern,
+              history: [newPattern],
               speedIndex: $speedIndex,
               lastEvoTime: null,
               diedOut: false
