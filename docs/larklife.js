@@ -675,7 +675,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if ($diedOut) showNotice("Population has died out.");
       else dropNotice();
     }
-
+    //console.log(Math.round(fps) + " FPS");
   };
 
   function showNotice(text) {
@@ -902,7 +902,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  function mainLoop() {
+  var fps = 60,
+      framesThisSecond = 0,
+      lastFpsUpdate = 0;
+
+  function mainLoop(timestamp) {
+
+    if (timestamp > lastFpsUpdate + 1000) { // update every second
+      fps = 0.25 * framesThisSecond + (1 - 0.25) * fps; // compute the new FPS
+
+      lastFpsUpdate = timestamp;
+      framesThisSecond = 0;
+    }
+    framesThisSecond++;
 
     update();
     render();
@@ -919,6 +931,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   resetState();
   detectPatternFromHash();
-  mainLoop();
+  requestAnimationFrame(mainLoop);
 
 });
