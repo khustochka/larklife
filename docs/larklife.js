@@ -204,14 +204,23 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   $canvas.addEventListener("touchstart", function (e) {
-    e.preventDefault();
+    // Commented out because it breaks clicking cells
+    // But it causes ugly shadows when scrolling.
+    // If we uncomment, on iOS we can emulate clicking the different way
+    // But on Android it's a pain.
+    //e.preventDefault();
+
     dragX = e.touches[0].pageX;
     dragY = e.touches[0].pageY;
     isMouseDown = true;
   });
 
   $canvas.addEventListener("touchend", function (e) {
-    e.preventDefault();
+    // Commented out because it breaks clicking cells
+    // But it causes ugly shadows when scrolling.
+    // If we uncomment, on iOS we can emulate clicking the different way
+    // But on Android it's a pain.
+    //e.preventDefault();
     isMouseDown = null;
     isDragging = null;
   });
