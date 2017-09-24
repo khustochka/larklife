@@ -692,10 +692,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Show step and size
-    document.getElementsByClassName("stepNum")[0].innerHTML = $step;
-    document.getElementsByClassName("sizeNum")[0].innerHTML = $figure.length;
+    document.getElementById("stepNum").innerHTML = $step;
+    document.getElementById("sizeNum").innerHTML = $figure.length;
 
-    document.getElementsByClassName("showSpeed")[0].innerHTML = speed() + " gen/s";
+    document.getElementById("showSpeed").innerHTML = speed() + " gen/s";
 
     if ($period === 1) {
       if ($step === 0)
@@ -714,14 +714,14 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function showNotice(text) {
-    var notice = document.getElementsByClassName("notice")[0];
+    var notice = document.getElementById("notice");
     notice.innerHTML = text;
     notice.style.display = "block";
     notice.style.left = ($width - notice.clientWidth) / 2 + "px";
   }
 
   function dropNotice() {
-    var notice = document.getElementsByClassName("notice")[0];
+    var notice = document.getElementById("notice");
     notice.innerHTML = "";
     notice.style.display = "none";
   }

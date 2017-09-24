@@ -11,6 +11,7 @@ html, body {
 
 body {
     overflow-y: hidden;
+    touch-action: none;
 }
 
 /* just to be sure these are full screen*/
@@ -32,7 +33,7 @@ canvas {
     z-index: 1000;
 }
 
-.notice {
+#notice {
     font-family: Arial, sans-serif;
     font-weight: bold;
     font-size: 14px;
@@ -96,7 +97,7 @@ canvas {
     text-align: left;
 }
 
-.stepSize span.stepNum, .stepSize span.sizeNum {
+.stepSize span#stepNum, .stepSize span#sizeNum {
     font-weight: bold;
     font-size: 18px;
     background-color: black;
@@ -140,7 +141,7 @@ canvas {
     color: #777777;
 }
 
-.speedControls span.showSpeed {
+.speedControls span#showSpeed {
     padding: 7px 10px;
     font-size: 12px;
     font-family: Arial, sans-serif;
