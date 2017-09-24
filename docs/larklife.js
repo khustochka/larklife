@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var worker = new Worker('worker.js');
 
-  worker.addEventListener('message', function(e) {
+  worker.addEventListener('message', function (e) {
     $evoCache[e.data.genId] = e.data.figure;
   }, false);
 
@@ -67,22 +67,25 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function fillInPatternList() {
-    var ul = $(".patterns"), li, a, pattern;
+    var ul = document.getElementsByClassName("patterns")[0], li, a, pattern, text;
     for (var key in PATTERNS) {
       pattern = PATTERNS[key];
-      li = $("<li>");
-      a = $("<a>", {text: pattern.name, href: "#" + key});
-      li.append(a);
-      ul.append(li);
-      li.data("name", key);
+      li = document.createElement("LI");
+      a = document.createElement("A");
+      a.href = "#" + key;
+      a.innerHTML = pattern.name;
+      li.appendChild(a);
+      ul.appendChild(li);
     }
 
-    $(".patterns li a").click(function (e) {
-      e.preventDefault();
-      window.location.replace(e.target.href);
-      $actionsList.push(["detectPatternFromHash"]);
-    });
-
+    document.querySelectorAll(".patterns li a").forEach(function (el) {
+          el.addEventListener("click", function (e) {
+            e.preventDefault();
+            window.location.replace(e.target.href);
+            $actionsList.push(["detectPatternFromHash"]);
+          })
+        }
+    );
   }
 
   function setState(newst) {
@@ -121,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function generateNewId() {
     return new Date().valueOf();
   }
-  
+
   function loadPattern(name) {
     var pattern = PATTERNS[name],
         percent = 0.33;
@@ -136,10 +139,10 @@ document.addEventListener('DOMContentLoaded', function () {
               i = 0;
           while (i <= (area * percent)) {
             newCell = [
-                Math.floor(Math.random() * widthInCells),
-                Math.floor(Math.random() * heightInCells)
+              Math.floor(Math.random() * widthInCells),
+              Math.floor(Math.random() * heightInCells)
             ];
-            if (!inArray(newCell, newPattern))  {
+            if (!inArray(newCell, newPattern)) {
               newPattern.push(newCell);
               i++;
             }
@@ -215,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener("mouseup", function (e) {
     e.preventDefault();
     document.removeEventListener("mousemove", processDrag);
-    $("body").css("cursor", "default");
+    document.body.style.cursor = "default";
     if (isDragging) {
     }
     else {
@@ -260,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (isMouseDown) {
       var touch = e.type === "touchmove";
       e.preventDefault();
-      $("body").css("cursor", "move");
+      document.body.style.cursor = "move";
       isDragging = true;
       var newX = touch ? e.touches[0].pageX : e.clientX,
           newY = touch ? e.touches[0].pageY : e.clientY;
@@ -337,11 +340,11 @@ document.addEventListener('DOMContentLoaded', function () {
     $actionsList.push(["zoomOut"])
   });
 
-  $("#btnFaster").click(function () {
+  document.getElementById("btnFaster").addEventListener("click", function () {
     $speedIndex = Math.min($speedIndex + 1, speedOptions.length - 1);
   });
 
-  $("#btnSlower").click(function () {
+  document.getElementById("btnSlower").addEventListener("click", function () {
     $speedIndex = Math.max($speedIndex - 1, 0);
   });
 
@@ -689,10 +692,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Show step and size
-    $(".stepNum").html($step);
-    $(".sizeNum").html($figure.length);
+    document.getElementsByClassName("stepNum")[0].innerHTML = $step;
+    document.getElementsByClassName("sizeNum")[0].innerHTML = $figure.length;
 
-    $(".showSpeed").html(speed() + " gen/s");
+    document.getElementsByClassName("showSpeed")[0].innerHTML = speed() + " gen/s";
 
     if ($period === 1) {
       if ($step === 0)
@@ -711,16 +714,16 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function showNotice(text) {
-    var notice = $(".notice");
-    notice.html(text);
-    notice.show();
-    notice.css("left", ($width - notice.width()) / 2 + "px");
+    var notice = document.getElementsByClassName("notice")[0];
+    notice.innerHTML = text;
+    notice.style.display = "block";
+    notice.style.left = ($width - notice.clientWidth) / 2 + "px";
   }
 
   function dropNotice() {
-    var notice = $(".notice");
-    notice.html("");
-    notice.hide();
+    var notice = document.getElementsByClassName("notice")[0];
+    notice.innerHTML = "";
+    notice.style.display = "none";
   }
 
   function processStep() {
