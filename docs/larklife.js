@@ -174,6 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function processClear() {
     if (wantsToStopEvolution("Evolution is in progress. Do you want to clear the field?")) {
+      history.replaceState("", document.title, window.location.pathname + window.location.search);
       resetState();
     }
   }
