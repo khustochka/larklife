@@ -735,10 +735,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var newFigure;
     if ($period === 0) {
-      var evoT1 = Date.now();
-      newFigure = getEvolution($genId);
-      var evoT2 = Date.now();
-      //console.log("Evolution took: " + (evoT2 - evoT1) + " ms");
+      if ($figure.length < 3) newFigure = [];
+      else newFigure = getEvolution($genId);
       if (!newFigure) return false;
     }
     // NOTE: history.length is effectively first period step?
@@ -892,7 +890,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       setState({
         figure: newFigure,
-        genId: newFigure.length > 2 ? $genId : null,
+        genId: newFigure.length > 2 ? generateNewId() : null,
         step: 0,
         width: $width,
         height: $height,
