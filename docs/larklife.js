@@ -78,14 +78,15 @@ document.addEventListener('DOMContentLoaded', function () {
       ul.appendChild(li);
     }
 
-    document.querySelectorAll(".patterns li a").forEach(function (el) {
-          el.addEventListener("click", function (e) {
-            e.preventDefault();
-            window.location.replace(e.target.href);
-            $actionsList.push(["detectPatternFromHash"]);
-          })
-        }
-    );
+    var links = document.querySelectorAll(".patterns li a");
+    for (var i = 0; i < links.length; i++) {
+      links[i].addEventListener("click", function (e) {
+        e.preventDefault();
+        window.location.replace(e.target.href);
+        $actionsList.push(["detectPatternFromHash"]);
+      })
+    }
+
   }
 
   function setState(newst) {
