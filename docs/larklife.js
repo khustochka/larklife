@@ -132,7 +132,8 @@ document.addEventListener('DOMContentLoaded', function () {
         percent = 0.33;
     if (pattern) {
       if (wantsToStopEvolution("Evolution is in progress. Do you want to stop it?")) {
-        var newPattern = pattern.pattern, newCell, newCellSize = 18;
+        // slice(0) is array cloning
+        var newPattern = pattern.pattern.slice(0), newCell, newCellSize = 18;
         if (!newPattern) {
           newPattern = [];
           var widthInCells = Math.floor($width / $cellSize),
