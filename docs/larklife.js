@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var worker = new Worker('worker.js');
 
   worker.addEventListener('message', function (e) {
+    console.log("[WORKER] Received new evolution")
     $evoCache[e.data.genId] = e.data.figure;
   }, false);
 
@@ -426,18 +427,20 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       else {
         var delta = (Date.now() - $lastEvoTime);
-        //console.log("Delta " + delta + " ms");
+        console.log("Delta " + delta + " ms");
         stepsToGo = Math.floor(speed() * delta / 1000);
       }
-      //console.log("Steps to go: "+ stepsToGo);
-      var j = 0, startTime = Date.now(), el_time;
-      while (j < stepsToGo && (!el_time || el_time < 1000 / speed())) {
+      console.log("Steps to go: " + stepsToGo);
+      var j = 0, startTime = Date.now(), el_time, stepBefore;
+      while (j < stepsToGo && (!el_time || el_time < (1000 / speed()))) {
+        stepBefore = $step;
         processStep();
-        j++;
+        if ($step > stepBefore) j++;
         el_time = Date.now() - startTime;
         //console.log("Elapsed: " + el_time + " ms");
+        console.log("Step: " + $step)
       }
-      //console.log("Steps done: "+ j);
+      console.log("Steps done: " + j);
     }
   }
 
