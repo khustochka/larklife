@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
       $history,
       $speedIndex = 3, // Generations per second
       $lastEvoTime,
-      $diedOut;
+      $diedOut,
+      $notice = "";
 
 
   var speedOptions = [2, 5, 10, 20, 30, 60, 100];
@@ -720,16 +721,22 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function showNotice(text) {
-    var notice = document.getElementById("notice");
-    notice.innerHTML = text;
-    notice.style.display = "block";
-    notice.style.left = ($width - notice.clientWidth) / 2 + "px";
+    if (text !== $notice) {
+      var notice = document.getElementById("notice");
+      notice.innerHTML = text;
+      notice.style.display = "block";
+      notice.style.left = ($width - notice.clientWidth) / 2 + "px";
+      $notice = text;
+    }
   }
 
   function dropNotice() {
-    var notice = document.getElementById("notice");
-    notice.innerHTML = "";
-    notice.style.display = "none";
+    if ($notice !== "") {
+      var notice = document.getElementById("notice");
+      notice.innerHTML = "";
+      notice.style.display = "none";
+      $notice = "";
+    }
   }
 
   function processStep() {
